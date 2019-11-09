@@ -1,11 +1,16 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Página de prueba<title>
-</head>
-<body>
-  <h1>Hola amiguitos!</h1>
-  <footer>gpuma 2017</footer>
-</body>
-</html>
+<iframe
+	id="chart"
+	width="1978.1076648804883"
+	height="1222.4818049490539"
+	seamless frameborder="0"
+	scrolling="no"
+	src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQAKHZwYU3GXFe5y2waF35CWmsFi7lzgVjMETEYHZhZReQ4C_3ArEi8eYFEHqxijMCRXcHV_3_SvRBV/pubchart?oid=1682894791&amp;format=interactive"
+></iframe>
+
+<script>
+	window.setInterval("reloadIFrame();", 60000);
+	function reloadIFrame() {
+		document.getElementById("chart").src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQAKHZwYU3GXFe5y2waF35CWmsFi7lzgVjMETEYHZhZReQ4C_3ArEi8eYFEHqxijMCRXcHV_3_SvRBV/pubchart?oid=1682894791&amp;format=interactive"
+	}
+</script>
