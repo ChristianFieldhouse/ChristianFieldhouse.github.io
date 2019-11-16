@@ -27,10 +27,39 @@ body {
 	src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQAKHZwYU3GXFe5y2waF35CWmsFi7lzgVjMETEYHZhZReQ4C_3ArEi8eYFEHqxijMCRXcHV_3_SvRBV/pubchart?oid=1682894791&amp;format=interactive"
 ></iframe>
 
+<iframe
+	id="govt_chart2"
+	width="1881.0971967834616"
+	height="897.6617137328597" 
+	seamless frameborder="0"
+	scrolling="no"
+	style="display:none"
+	src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQAKHZwYU3GXFe5y2waF35CWmsFi7lzgVjMETEYHZhZReQ4C_3ArEi8eYFEHqxijMCRXcHV_3_SvRBV/pubchart?oid=1682894791&amp;format=interactive"
+></iframe>
+
 <script>
 	window.setInterval("reloadIFrame();", 60000);
+	var toggle = 1;
+	var charts = [
+		["govt_chart", "govt_chart2"],
+	];
+	var urls = Array(charts.length)
+	for(var i = 0; i < charts.length; i++){
+		urls[i] = document.getElementById(charts[i][0]).src;
+	}
 	function reloadIFrame() {
-		document.getElementById("govt_chart").src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQAKHZwYU3GXFe5y2waF35CWmsFi7lzgVjMETEYHZhZReQ4C_3ArEi8eYFEHqxijMCRXcHV_3_SvRBV/pubchart?oid=1682894791&amp;format=interactive"
+		console.log("a")
+		for (var i = 0; i < urls.length; i++){
+			document.getElementById(charts[i][1 - toggle]).style.display = "none";
+			document.getElementById(charts[i][toggle]).style.display = "block";
+			console.log("aa")
+		}
+		console.log("b")
+		for (var i = 0; i < urls.length; i++){
+			document.getElementById(charts[i][1 - toggle]).src=urls[i];
+		}
+		console.log("c")
+		toggle = 1 - toggle;
 	}
 </script>
 </html>

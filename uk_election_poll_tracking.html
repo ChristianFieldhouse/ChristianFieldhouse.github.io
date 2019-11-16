@@ -19,16 +19,46 @@ body {
 </head>
 
 <iframe
+	id="poll_chart"
 	width="1773.5"
 	height="947.9678742310322"
 	seamless frameborder="0"
 	scrolling="no"
 	src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTu02TLQ5UtK_uTeNPmzrh9ER3IPMEDpdg-yM70IS6aKo6DvxdbnTy2x73NoW5suey60t9g_Vr8nNf8/pubchart?oid=294336954&amp;format=interactive"
 ></iframe>
+
+<iframe
+	id="poll_chart2"
+	width="1773.5"
+	height="947.9678742310322"
+	seamless frameborder="0"
+	scrolling="no"
+	style="display:none"
+	src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTu02TLQ5UtK_uTeNPmzrh9ER3IPMEDpdg-yM70IS6aKo6DvxdbnTy2x73NoW5suey60t9g_Vr8nNf8/pubchart?oid=294336954&amp;format=interactive"
+></iframe>
+
 <script>
-	window.setInterval("reloadIFrame();", 60000);
+	window.setInterval("reloadIFrame();", 6000);
+	var toggle = 1;
+	var charts = [
+		["poll_chart", "poll_chart2"],
+	];
+	var urls = Array(charts.length)
+	for(var i = 0; i < charts.length; i++){
+		urls[i] = document.getElementById(charts[i][0]).src
+	}
 	function reloadIFrame() {
-		document.getElementById("pm_chart").src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTu02TLQ5UtK_uTeNPmzrh9ER3IPMEDpdg-yM70IS6aKo6DvxdbnTy2x73NoW5suey60t9g_Vr8nNf8/pubchart?oid=294336954&amp;format=interactive"
+		for (var i = 0; i < urls.length; i++){
+			console.log(i)
+			document.getElementById(charts[i][1 - toggle]).style.display = "none";
+			document.getElementById(charts[i][toggle]).style.display = "block";
+		}
+		
+		for (var i = 0; i < urls.length; i++){
+			document.getElementById(charts[i][1 - toggle]).src=urls[i];
+		}
+		
+		toggle = 1 - toggle;
 	}
 </script>
 </html>
