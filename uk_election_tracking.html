@@ -102,8 +102,9 @@ a:active {color: yellow;}
 	<a href="uk_election_poll_tracking.html">Just Polls</a>
 </div>
 
+<script src="updating.js"></script>
 <script>
-	window.setInterval("reloadIFrame();", 6000);
+	window.setInterval("reloadIFrames();", refresh_milliseconds);
 	var toggle = 1;
 	var charts = [
 		["govt_chart", "govt_chart2"],
@@ -113,19 +114,6 @@ a:active {color: yellow;}
 	var urls = Array(charts.length)
 	for(var i = 0; i < charts.length; i++){
 		urls[i] = document.getElementById(charts[i][0]).src
-	}
-	function reloadIFrame() {
-		for (var i = 0; i < urls.length; i++){
-			console.log(i)
-			document.getElementById(charts[i][1 - toggle]).style.display = "none";
-			document.getElementById(charts[i][toggle]).style.display = "block";
-		}
-		
-		for (var i = 0; i < urls.length; i++){
-			document.getElementById(charts[i][1 - toggle]).src=urls[i];
-		}
-		
-		toggle = 1 - toggle;
 	}
 </script>
 </html>
