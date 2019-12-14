@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-152241611-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-152241611-1');
+</script>
+
+<style>
+body {
+	background-color: #000000
+}
+a:link {color: white;}
+a:visited {color: green;}
+a:hover {color: yelllow;}
+a:active {color: yellow;}
+</style>
+</head>
+
+<div>
+	<iframe
+		id="dem_full_chart"
+		width="1881"
+		height="896.5"
+		seamless frameborder="0"
+		scrolling="no"
+		src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQO2yy_PcGCmAKIYruntRNdqIYgwlUnPYoKS7vHtg0ClPV9OAKk_DE53vXSihO_g_0Oas0Ed95dHjok/pubchart?oid=2122454106&amp;format=interactive"
+	></iframe>
+
+	<iframe
+		id="dem_full_chart2"
+		width="1881"
+		height="896.5"
+		seamless frameborder="0"
+		scrolling="no"
+		style="display:none"
+		src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQO2yy_PcGCmAKIYruntRNdqIYgwlUnPYoKS7vHtg0ClPV9OAKk_DE53vXSihO_g_0Oas0Ed95dHjok/pubchart?oid=2122454106&amp;format=interactive"
+	></iframe>
+</div>
+
+<br>
+<div>
+	<a href="2019_uk_election/uk_election_tracking.html">2019 UK election stuff</a>
+</div>
+
+<script src="updating.js"></script>
+<script>
+	window.setInterval("reloadIFrames();", refresh_milliseconds);
+	var toggle = 1;
+	var charts = [
+		["dem_full_chart", "dem_full_chart2"],
+	];
+	var urls = Array(charts.length)
+	for(var i = 0; i < charts.length; i++){
+		urls[i] = document.getElementById(charts[i][0]).src
+	}
+</script>
+</html>
+
