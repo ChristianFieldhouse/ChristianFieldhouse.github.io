@@ -44,6 +44,49 @@ a:active {color: yellow;}
 	></iframe>
 </div>
 
+<div>
+	<iframe
+		id="trump"
+		width="1691.5"
+		height="674.9108333333334"
+		seamless frameborder="0"
+		scrolling="no"
+		src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTHOPH6SifAmpCJpe_e-ENY0s9p9xIluDxfjUMZdXygVnz3MP6uO14uzkzV8HkhZQYIJF3FtAnhH-am/pubchart?oid=769809395&amp;format=interactive"
+	></iframe>
+	
+	<iframe
+		id="trump2"
+		width="1691.5"
+		height="674.9108333333334"
+		seamless frameborder="0"
+		scrolling="no"
+		style="display:none"
+		src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTHOPH6SifAmpCJpe_e-ENY0s9p9xIluDxfjUMZdXygVnz3MP6uO14uzkzV8HkhZQYIJF3FtAnhH-am/pubchart?oid=769809395&amp;format=interactive"
+	></iframe>
+
+</div>
+
+<div>
+	<iframe 
+		id="labour"
+		width="1682.5"
+		height="703.3541666666666"
+		seamless frameborder="0"
+		scrolling="no"
+		src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQkwvz-3ZurPCtyry77UeqxfIOBv3fWkdECE96vyRDHoBYoXVan170NXmod5mJxEMF1d5cQOSwM4Wwc/pubchart?oid=1063217749&amp;format=interactive"
+	></iframe>
+
+	<iframe 
+		id="labour2"
+		width="1682.5"
+		height="703.3541666666666"
+		seamless frameborder="0"
+		scrolling="no"
+		style="display:none"
+		src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQkwvz-3ZurPCtyry77UeqxfIOBv3fWkdECE96vyRDHoBYoXVan170NXmod5mJxEMF1d5cQOSwM4Wwc/pubchart?oid=1063217749&amp;format=interactive"
+	></iframe>
+
+</div>
 <br>
 <div>
 	<a href="2019_uk_election/uk_election_tracking.html">2019 UK election stuff</a>
@@ -55,6 +98,8 @@ a:active {color: yellow;}
 	var toggle = 1;
 	var charts = [
 		["dem_full_chart", "dem_full_chart2"],
+		["trump", "trump2"],
+		["labour", "labour2"],
 	];
 	var urls = Array(charts.length)
 	for(var i = 0; i < charts.length; i++){
