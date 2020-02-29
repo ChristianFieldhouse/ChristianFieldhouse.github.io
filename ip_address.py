@@ -1,6 +1,8 @@
 import urllib.request, time
 import git
 
+interval = 60 * 60 * 1000
+
 repo = git.Repo()
 
 while True:
@@ -10,4 +12,4 @@ while True:
     repo.index.add("ip_address.js")
     repo.index.commit("automated ip address update")
     repo.remotes.origin.push()
-    time.sleep(20000)
+    time.sleep(interval)
