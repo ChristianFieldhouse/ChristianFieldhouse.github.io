@@ -7,7 +7,7 @@ repo = git.Repo()
 
 while True:
     ip = urllib.request.urlopen("https://api.ipify.org/").read().decode("utf-8")
-    with open("ip_address.js", "w") as f:
+    with open("ip_address.js", "r") as f:
         current_line = f.read()
         
     new_line = "var ip = \"" + ip + "\""
