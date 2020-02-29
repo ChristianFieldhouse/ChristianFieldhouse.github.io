@@ -1,9 +1,13 @@
 import urllib.request, time
 import git
 
-interval = 10 * 60 * 1000
-
 repo = git.Repo()
+
+def wait(minutes=1, seconds=0, notify_seconds=1):
+    for i in range((seconds + minutes*60)//notify_seconds):
+        print("                                       ", end="\r")
+        print(f"fetching in {(seconds + minutes*60)-i*notify_seconds}", end="\r")
+        time.sleep(notify_seconds)
 
 while True:
     ip = urllib.request.urlopen("https://api.ipify.org/").read().decode("utf-8")
@@ -21,4 +25,4 @@ while True:
     else:
         print("same old ip : ", ip)
 
-    time.sleep(interval)
+    wait(minutes=10)
