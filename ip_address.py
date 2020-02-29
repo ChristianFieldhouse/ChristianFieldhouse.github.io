@@ -1,7 +1,7 @@
 import urllib.request, time
 import git
 
-interval = 60 * 60 * 1000
+interval = 10 * 60 * 1000
 
 repo = git.Repo()
 
