@@ -91,15 +91,18 @@ a:active {color: yellow;}
 <div>
 	<a href="2019_uk_election/uk_election_tracking.html">2019 UK election stuff</a>
 	<br>
-	<a href="http://165.120.44.203">Get this website straight from the source</a>
+	<a id="website" href="">Get this website straight from the source</a>
 	<br>
-	<a href="http://165.120.44.203/number_edit">Edit a number on my PC</a>
+	<a id="number" href="">Edit a number on my PC</a>
 	<br>
-	<a href="http://165.120.44.203/arduino">If my microcontroller is hosting a sensor, access it here</a>
+	<a id="esp8266" href="">If my microcontroller is hosting a sensor, access it here</a>
 </div>
 
+
+<script src="ip_address.js"></script>
 <script src="updating.js"></script>
 <script>
+	document.getElementById("website").href = "hello_there";
 	window.setInterval("reloadIFrames();", refresh_milliseconds);
 	var toggle = 1;
 	var charts = [
@@ -109,7 +112,17 @@ a:active {color: yellow;}
 	];
 	var urls = Array(charts.length)
 	for(var i = 0; i < charts.length; i++){
-		urls[i] = document.getElementById(charts[i][0]).src
+		urls[i] = document.getElementById(charts[i][0]).src;
+	}
+	
+	console.log("hi")
+	var local_urls = [
+		["website", ""],
+		["number", "/number_game"],
+		["esp8266", "/arduino"],
+	];
+	for(var i = 0; i < local_urls.length; i++){
+		document.getElementById(local_urls[i][0]).href = "http://" + ip + local_urls[i][1];
 	}
 </script>
 </html>

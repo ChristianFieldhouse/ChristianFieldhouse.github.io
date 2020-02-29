@@ -1,4 +1,4 @@
-var refresh_milliseconds = 60 * 1000
+var refresh_milliseconds = 60 * 100
 
 function reloadIFrames() {
 	for (var i = 0; i < urls.length; i++){
