@@ -23,6 +23,6 @@ while True:
         repo.remotes.origin.push()
         print("updated to new ip : ", ip)
     else:
-        print("same old ip : ", ip)
+        print("same old ip : ", ip, end="\r")
 
     wait(minutes=10)
