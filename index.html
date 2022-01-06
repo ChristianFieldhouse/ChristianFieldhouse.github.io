@@ -1,2 +1,23 @@
 <!DOCTYPE html>
-<meta http-equiv="Refresh" content="0; url=election_tracking.html" />
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Nutty's nutty adventure</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<!--script src="node_modules/three/build/three.js"></script-->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.js"></script>
+		<script src="https://unpkg.com/three@0.127.0/examples/js/loaders/GLTFLoader.js"></script>
+		<script src="mysrc.js" type="module"></script>
+		<button type="button" onclick="play_sound()">Play Music</button>
+    <script>
+    function play_sound(){
+        var audio = new Audio('sounds/squirrel song.mp3');
+        var playPromise = audio.play();
+    }
+    </script>
+	</body>
+</html>

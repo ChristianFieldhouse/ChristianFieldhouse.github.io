@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-152241611-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-152241611-1');
+</script>
+
+<style>
+body {
+	background-color: #000000
+}
+a:link {color: white;}
+a:visited {color: green;}
+a:hover {color: yelllow;}
+a:active {color: yellow;}
+</style>
+</head>
+
+<div>
+	<iframe
+		id="trump"
+		width="1691.5"
+		height="674.9108333333334"
+		seamless frameborder="0"
+		scrolling="no"
+		src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTHOPH6SifAmpCJpe_e-ENY0s9p9xIluDxfjUMZdXygVnz3MP6uO14uzkzV8HkhZQYIJF3FtAnhH-am/pubchart?oid=769809395&amp;format=interactive"
+	></iframe>
+	
+	<iframe
+		id="trump2"
+		width="1691.5"
+		height="674.9108333333334"
+		seamless frameborder="0"
+		scrolling="no"
+		style="display:none"
+		src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTHOPH6SifAmpCJpe_e-ENY0s9p9xIluDxfjUMZdXygVnz3MP6uO14uzkzV8HkhZQYIJF3FtAnhH-am/pubchart?oid=769809395&amp;format=interactive"
+	></iframe>
+
+</div>
+
+<br>
+<div>
+	<a href="2019_uk_election/uk_election_tracking.html">2019 UK election stuff</a>
+	<br>
+	<a id="website" href="">Get this website straight from the source</a>
+	<br>
+	<a id="number" href="">Edit a number on my PC</a>
+	<br>
+	<a id="esp8266" href="">If my microcontroller is hosting a sensor, access it here</a>
+</div>
+
+
+<script src="ip_address.js"></script>
+<script src="updating.js"></script>
+<script>
+	document.getElementById("website").href = "hello_there";
+	window.setInterval("reloadIFrames();", refresh_milliseconds);
+	var toggle = 1;
+	var charts = [
+		["trump", "trump2"]
+	];
+	var urls = Array(charts.length)
+	for(var i = 0; i < charts.length; i++){
+		urls[i] = document.getElementById(charts[i][0]).src;
+	}
+	
+	console.log("hi")
+	var local_urls = [
+		["website", ""],
+		["number", "/number_game"],
+		["esp8266", "/arduino"],
+	];
+	for(var i = 0; i < local_urls.length; i++){
+		document.getElementById(local_urls[i][0]).href = "http://" + ip + local_urls[i][1];
+	}
+</script>
+</html>
+
