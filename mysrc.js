@@ -12,7 +12,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 var squirrel;
-const squirrel_geom = new THREE.SphereGeometry(0.1);
+const squirrel_geom = new THREE.SphereGeometry(0.02);
 const smaterial = new THREE.MeshBasicMaterial( { color: 0xffa8a9 } );
 squirrel = new THREE.Mesh( squirrel_geom, smaterial );
 //scene.add( squirrel );
@@ -48,6 +48,9 @@ var squirrel_pose = {
         0: 0,
         1: 0,
     },
+	"spine_base": {
+		0: 0,
+	}
 }
 
 var squirrel_bones = {
@@ -80,6 +83,9 @@ var squirrel_bones = {
         1: [0, 2, 0, 2, 0],
         2: [0, 2, 0, 2, 0, 0],
     },
+	"spine_base": {
+		0: [0, 2],
+	}
 }
 
 function bone(arr){
@@ -93,7 +99,7 @@ function bone(arr){
 loader.load( 'objects/bitchin_squirrel_boy.glb', function ( gltf ) {
 
 	gltf.scene.scale.set( 0.05, 0.05, 0.05 );
-	gltf.scene.position.set(0, squirrel_elevation, 0);
+	gltf.scene.position.set(0, squirrel_elevation + 0.2, 0);
 	gltf.scene.name = "squirrel";
 	squirrel =  gltf.scene;
 	
@@ -119,6 +125,8 @@ loader.load( 'objects/bitchin_squirrel_boy.glb', function ( gltf ) {
     
     squirrel_pose["head"][0] = bone(squirrel_bones["head"][0]).rotation.x;
     squirrel_pose["head"][1] = bone(squirrel_bones["head"][1]).rotation.x;
+
+	squirrel_pose["spine_base"][0] = bone(squirrel_bones["spine_base"][0]).rotation.x;
 
 	scene.add(squirrel);
 	console.log("added gltf");
@@ -192,12 +200,98 @@ const skyboxGeo = new THREE.BoxGeometry(100, 100, 100);
 const skybox = new THREE.Mesh(skyboxGeo, createMaterialArray());
 scene.add(skybox);
 
-function add_tree(x, y, scale=0.05){
-	loader.load( 'objects/basic_bitch_tree.glb', function ( gltf ) {
+var map_loaded = false;
+loader.load( 'objects/squirrel_map_katie_lower_poly.glb', function ( gltf ) {
+	const scale = 0.2;
+	gltf.scene.scale.set(scale, scale, scale);
+	gltf.scene.rotation.y = Math.PI * 2 * Math.random();
+	gltf.scene.position.set(0, 0.0, 0);
+	scene.add(gltf.scene);
+	map_loaded = true;
+}, undefined, function ( error ) {
+	console.error( error );
+});
 
-		gltf.scene.scale.set( scale, scale, scale );
+var tree_model_0 = null;
+function add_tree(xyz, scale=0.05){
+	console.log(tree_model_0);
+	if (tree_model_0 == null){
+		console.log("tree is null, loading...");
+		loader.load( 'objects/basic_bitch_tree.glb', function ( gltf ) {
+
+			gltf.scene.scale.set( scale, scale, scale );
+			gltf.scene.rotation.y = Math.PI * 2 * Math.random();
+			gltf.scene.position.set(xyz.x, xyz.y, xyz.z);
+			tree_model_0 = gltf.scene.clone(true);
+			scene.add(tree_model_0.clone(true));
+			console.log(tree_model_0);
+		}, undefined, function ( error ) {
+			console.error( error );
+		} );
+	}else{
+		console.log("tree is not null");
+		var new_tree = tree_model_0.clone(true);
+		new_tree.rotation.y = Math.PI * 2 * Math.random();
+		new_tree.position.set(xyz.x, xyz.y, xyz.z);
+		scene.add(new_tree);
+	}
+}
+
+var acorn_model_0 = null;
+function add_nut(xyz){
+    const srcfile = 'objects/lil_acorn.glb';
+	const up_shift = 0.1;
+	if (acorn_model_0 == null){
+		loader.load(srcfile, function ( gltf ) {
+			gltf.scene.scale.set( 0.05, 0.05, 0.05 );
+			gltf.scene.rotation.y = Math.PI * 2 * Math.random();
+			gltf.scene.position.set(xyz.x, xyz.y + up_shift, xyz.z);
+			scene.add(gltf.scene);
+			acorns.push(gltf.scene);
+			acorn_model_0 = gltf.scene.clone(true);
+		}, undefined, function ( error ) {
+			console.error( error );
+		} );
+	}
+	else{
+		console.log("acorn is not null");
+		var new_nut = acorn_model_0.clone(true);
+		new_nut.rotation.y = Math.PI * 2 * Math.random();
+		new_nut.position.set(xyz.x, xyz.y + up_shift, xyz.z);
+		scene.add(new_nut);
+	}
+}
+
+var golden_acorn_model_0 = null;
+function add_golden_nut(xyz){
+    var srcfile = 'objects/lil_acorn.glb';
+	if (golden_acorn_model_0 == null){
+		loader.load(srcfile, function ( gltf ) {
+			gltf.scene.scale.set( 0.05, 0.05, 0.05 );
+			gltf.scene.rotation.y = Math.PI * 2 * Math.random();
+			gltf.scene.position.set(xyz.x, xyz.y, xyz.z);
+			scene.add(gltf.scene);
+			acorns.push(gltf.scene);
+			golden_acorn_model_0 = gltf.scene.clone(true);
+		}, undefined, function ( error ) {
+			console.error( error );
+		} );
+	}
+	else{
+		console.log("acorn is not null");
+		var new_nut = acorn_model_0.clone(true);
+		new_nut.rotation.y = Math.PI * 2 * Math.random();
+		new_nut.position.set(xyz.x, xyz.y, xyz.z);
+		scene.add(new_nut);
+	}
+}
+
+function add_heart(x, y, z=0, gold=false){
+    var srcfile = 'objects/katies_big_big_heart.glb';
+	loader.load(srcfile, function ( gltf ) {
+		gltf.scene.scale.set( 0.05, 0.05, 0.05 );
 		gltf.scene.rotation.y = Math.PI * 2 * Math.random();
-		gltf.scene.position.set(x, 0.4, y);
+		gltf.scene.position.set(x, 0.15, y);
 		scene.add( gltf.scene );
 		//console.log("added gltf");
 		//console.log(gltf.scene)
@@ -207,15 +301,13 @@ function add_tree(x, y, scale=0.05){
 		console.error( error );
 
 	} );
-}
-
-function add_nut(x, y){
-	loader.load( 'objects/lil_acorn.glb', function ( gltf ) {
-
-		gltf.scene.scale.set( 0.05, 0.05, 0.05 );
+	var srcfile = 'objects/torus_for_heart.glb';
+	loader.load(srcfile, function ( gltf ) {
+		gltf.scene.scale.set(0.5, 0.5, 0.5);
 		gltf.scene.rotation.y = Math.PI * 2 * Math.random();
-		gltf.scene.position.set(x, 0.15, y);
+		gltf.scene.position.set(x, 0, y);
 		scene.add( gltf.scene );
+		hoops.push(gltf.scene);
 		//console.log("added gltf");
 		//console.log(gltf.scene)
 
@@ -233,18 +325,25 @@ scene.add( light );
 //add_cube(0, 2, colours["green"], 2);
 for(var i = -5; i < 5; ++i){
   for(var j = 0; j < 20; ++j){
-    add_grass(i, j, 1);
+    //add_grass(i, j, 1);
   }
 }
 
 //add_grass(0, 0, 500);
 
-for (var t = 0; t < 40; ++t){
-	add_tree(Math.random() * 10 - 5, Math.random() * 20);
+var tree_positions = [];
+for (var i = 0; i < tree_positions.length; ++i){
+	add_tree(tree_positions[i]);
 }
 
+var acorns = [];
+for (var t = 0; t < 10; ++t){
+	//add_nut(Math.random() * 10 - 5, Math.random() * 20, 0, Math.random() < 0.1);
+}
+
+var hoops = [];
 for (var t = 0; t < 30; ++t){
-	add_nut(Math.random() * 10 - 5, Math.random() * 20);
+	//add_heart(Math.random() * 10 - 5, Math.random() * 20, 0, Math.random() < 0.1);
 }
 
 console.log(scene.children);
@@ -287,40 +386,21 @@ var squirrel_left = new THREE.Vector3(-1, 0, 0);
 var squirrel_up = new THREE.Vector3(0, 1, 0);
 var squirrel_target = new THREE.Vector3(0, 0, 0);
 
-function calculate_down(){
-	const gaze_angles = 10;
-
-	var points = [];
-	var point_weights = 0;
-	
-	function weight(distance){
-		return 1/distance;
-	}
-	
-	for (var i = 0; i < gaze_angles; ++i){
-		for (var j = 0; j < gaze_angles; ++j){
-			const theta = 2 * Math.PI * i / gaze_angles;
-			const phi = Math.PI * j / gaze_angles;
-			//console.log(theta);
-			const gaze =  new THREE.Vector3(Math.cos(phi), Math.sin(phi)*Math.cos(theta), Math.sin(phi) * Math.sin(theta));
-			const intersect = get_intersect(gaze);
-			if (intersect && (intersect.distance < 1)){
-				points.push(intersect);
-				point_weights += weight(intersect.distance);
-			}
-		}
-	}
-	
-	var mean_point = new THREE.Vector3();
-	for (var i = 0; i < points.length; ++i){
-		mean_point.add(points[i].point.multiplyScalar(weight(points[i].distance) / point_weights));
-	}
-	return mean_point;
+var state = {
+    "action": "walking",
+    "time": 0,
+    "velocity": new THREE.Vector3(0, 0, 0),
+    "map_editing": false,
 }
-
-var freefall = false;
-
-const indicators = false;
+if (state["map_editing"]){
+	camera.position.x = 0;
+	camera.position.y = 15;
+	camera.position.z = 0;
+	camera.lookAt(0, 0, 0);
+}
+const mouse = new THREE.Vector2();
+var item_positions = [];
+const indicators = true;
 
 if (indicators){
     var indicatorf = new THREE.Mesh( squirrel_geom, new THREE.MeshBasicMaterial( { color: colours["pink"] } ) );
@@ -328,205 +408,433 @@ if (indicators){
     var indicatorl = new THREE.Mesh( squirrel_geom, new THREE.MeshBasicMaterial( { color: colours["grey"] } ) );
     var indicatorr = new THREE.Mesh( squirrel_geom, new THREE.MeshBasicMaterial( { color: colours["purple"] } ) );
     //indicator.scale.set(0.1);
+	indicatorf.name = "Sphere";
+	indicatorb.name = "Sphere";
+	indicatorr.name = "Sphere";
+	indicatorl.name = "Sphere";
     scene.add(indicatorf);
     scene.add(indicatorb);
     scene.add(indicatorl);
     scene.add(indicatorr);
 }
 
+const l = 0.5;
+function set_bone(name, index, val, use_default=true){
+	var new_val = val + squirrel_pose[name][index];
+	if (!use_default){
+		new_val = val;
+	}
+	bone(squirrel_bones[name][index]).rotation.x = (new_val) * l + (1 - l) * (bone(squirrel_bones[name][index]).rotation.x);
+}
+
 function set_tail(t0, t1, t2){
-    //console.log(squirrel.children[0].children[3].rotation.x);
-    squirrel.children[0].children[3].rotation.x = t0 + squirrel_pose["tail"][0];
-    squirrel.children[0].children[3].children[0].rotation.x = t1 + squirrel_pose["tail"][1];	
-    squirrel.children[0].children[3].children[0].children[0].rotation.x = t2 + squirrel_pose["tail"][2];
+   set_bone("tail", 0, t0);
+   set_bone("tail", 1, t1);
+   set_bone("tail", 2, t2);
 }
 
 function set_front_left(t0, t1, t2){
-   //console.log(bone(squirrel_bones["front_left"][0]));
-   bone(squirrel_bones["front_left"][0]).rotation.x = t0; // + squirrel_pose["front_left"][0];
-   bone(squirrel_bones["front_left"][1]).rotation.x = t1; // + squirrel_pose["front_left"][1];
-   bone(squirrel_bones["front_left"][2]).rotation.x = t2; // + squirrel_pose["front_left"][2];
+   set_bone("front_left", 0, t0, false);
+   set_bone("front_left", 1, t1, false);
+   set_bone("front_left", 2, t2, false);
 }
 
 function set_front_right(t0, t1, t2){
-   //console.log(bone(squirrel_bones["front_left"][0]));
-   bone(squirrel_bones["front_right"][0]).rotation.x = t0; // + squirrel_pose["front_left"][0];
-   bone(squirrel_bones["front_right"][1]).rotation.x = t1; // + squirrel_pose["front_left"][1];
-   bone(squirrel_bones["front_right"][2]).rotation.x = t2; // + squirrel_pose["front_left"][2];
+   set_bone("front_right", 0, t0, false);
+   set_bone("front_right", 1, t1, false);
+   set_bone("front_right", 2, t2, false);
 }
 
 function set_back_right(t0, t1, t2){
-   //console.log(bone(squirrel_bones["front_left"][0]));
-   bone(squirrel_bones["back_right"][0]).rotation.x = t0 + squirrel_pose["back_right"][0];
-   bone(squirrel_bones["back_right"][1]).rotation.x = t1 + squirrel_pose["back_right"][1];
-   bone(squirrel_bones["back_right"][2]).rotation.x = t2 + squirrel_pose["back_right"][2];
+   set_bone("back_right", 0, t0);
+   set_bone("back_right", 1, t1);
+   set_bone("back_right", 2, t2);
 }
 
 function set_back_left(t0, t1, t2){
-   //console.log(bone(squirrel_bones["front_left"][0]));
-   bone(squirrel_bones["back_left"][0]).rotation.x = t0 + squirrel_pose["back_left"][0];
-   bone(squirrel_bones["back_left"][1]).rotation.x = t1 + squirrel_pose["back_left"][1];
-   bone(squirrel_bones["back_left"][2]).rotation.x = t2 + squirrel_pose["back_left"][2];
+   set_bone("back_left", 0, t0);
+   set_bone("back_left", 1, t1);
+   set_bone("back_left", 2, t2);
 }
 
 function set_head(t0, t1){
-   //console.log(bone(squirrel_bones["front_left"][0]));
-   bone(squirrel_bones["head"][0]).rotation.x = t0 + squirrel_pose["head"][0];
-   bone(squirrel_bones["head"][1]).rotation.x = t1 + squirrel_pose["head"][1];
+   set_bone("head", 0, t0);
+   set_bone("head", 1, t1);
 }
 
-const pace = 0.15;
+function set_spine_base(t0){
+   set_bone("spine_base", 0, t0);
+}
+
+function set_walking_pose(param){
+	squirrel.children[0].position.y = l * (-0.35) + (1 - l) * squirrel.children[0].position.y;
+	set_spine_base(0);
+	set_head(
+		0, //Math.sin(frame_no * 0.1) * 0.4,
+	    -Math.sin(param) * 0.2
+	)
+	set_tail(
+	    Math.sin(param) * 0.5 + 0.3,
+	    Math.sin(param) * 0.5 + 0.3,
+	    Math.sin(param) * 0.5 - 0.3,
+	
+	);
+	set_front_left(
+	    -Math.PI/2 + Math.PI/4 * Math.sin(param),
+	    0,
+	    0
+	);
+	set_front_right(
+	    -Math.PI/16 - Math.PI/4 + Math.PI/4 * Math.sin(Math.PI + param),
+	    0, //Math.PI/10, // - Math.PI/4 + Math.PI/4 * Math.sin(frame_no * 0.1),
+	    0
+	);
+	set_back_left(
+	    -Math.PI/8 * Math.sin(param),
+	    Math.PI/8 * Math.sin(param),
+	    -Math.PI/4 - Math.PI/6 * Math.sin(param),
+	);
+	set_back_right(
+	    -Math.PI/8 * Math.sin(Math.PI + param),
+	    -Math.PI/8 + Math.PI/8 * Math.sin(Math.PI + param),
+	    Math.PI/4 + Math.PI/6 * Math.sin(Math.PI + param),
+	);
+}
+
+function set_jumping_pose(){
+	squirrel.children[0].position.y = l * (-0.35) + (1 - l) * squirrel.children[0].position.y;
+    var param = state["time"] * 0.5;
+    var front_param = Math.min(param, Math.PI * 2);
+    var back_param = Math.min(param, Math.PI);
+	set_spine_base(0);
+	set_head(
+		0, //Math.sin(frame_no * 0.1) * 0.4,
+	    -Math.sin(param) * 0.2
+	)
+	set_tail(
+	    Math.sin(param) * 0.5 + 0.3,
+	    Math.sin(param) * 0.5 + 0.3,
+	    Math.sin(param) * 0.5 - 0.3,
+	
+	);
+	set_front_left(
+	    -Math.PI/2 + Math.PI/4 * Math.sin(Math.PI/2 + front_param),
+	    0,
+	    0
+	);
+	set_front_right(
+	    -Math.PI/16 - Math.PI/4 + Math.PI/4 * Math.sin(Math.PI/2 + front_param),
+	    0, //Math.PI/10, // - Math.PI/4 + Math.PI/4 * Math.sin(frame_no * 0.1),
+	    0
+	);
+	set_back_left(
+	    -Math.PI/8 * Math.sin(-Math.PI/2+ back_param),
+	    Math.PI/8 * Math.sin(-Math.PI/2+ back_param),
+	    -Math.PI/4 - Math.PI/6 * Math.sin(-Math.PI/2+ back_param),
+	);
+	set_back_right(
+	    -Math.PI/8 * Math.sin(-Math.PI/2+ back_param),
+	    -Math.PI/8 + Math.PI/8 * Math.sin(-Math.PI/2+ back_param),
+	    Math.PI/4 + Math.PI/6 * Math.sin(-Math.PI/2+ back_param),
+	);
+}
+
+function set_holding_on_pose(){
+	squirrel.children[0].position.y = l * (-0.35) + (1 - l) * squirrel.children[0].position.y;
+    var param = state["time"] * 0.5;
+    var front_param = Math.PI * 2;
+    var back_param = Math.PI;
+	set_spine_base(0);
+	var head_param = param * 0.678;
+	set_head(
+		0, //Math.sin(frame_no * 0.1) * 0.4,
+	    -Math.sin(head_param) * 0.2 - 0.3
+	)
+	set_tail(
+	    Math.sin(param) * 0.5 + 0.3,
+	    Math.sin(param) * 0.5 + 0.3,
+	    Math.sin(param) * 0.5 - 0.3,
+	
+	);
+	set_front_left(
+	    -Math.PI/2 + Math.PI/4 * Math.sin(Math.PI/2 + front_param),
+	    0,
+	    0
+	);
+	set_front_right(
+	    -Math.PI/16 - Math.PI/4 + Math.PI/4 * Math.sin(Math.PI/2 + front_param),
+	    0, //Math.PI/10, // - Math.PI/4 + Math.PI/4 * Math.sin(frame_no * 0.1),
+	    0
+	);
+	set_back_left(
+	    -Math.PI/8 * Math.sin(-Math.PI/2+ back_param),
+	    Math.PI/8 * Math.sin(-Math.PI/2+ back_param),
+	    -Math.PI/4 - Math.PI/6 * Math.sin(-Math.PI/2+ back_param),
+	);
+	set_back_right(
+	    -Math.PI/8 * Math.sin(-Math.PI/2+ back_param),
+	    -Math.PI/8 + Math.PI/8 * Math.sin(-Math.PI/2+ back_param),
+	    Math.PI/4 + Math.PI/6 * Math.sin(-Math.PI/2+ back_param),
+	);
+}
+
+function set_sitting_pose(){
+	squirrel.children[0].position.y = l * (-1.5) + (1 - l) * squirrel.children[0].position.y;
+    var param = state["time"] * 0.1;
+    var front_param = param * 0.3456;
+	var head_param = param * 0.678;
+	var situp = Math.PI/12 + Math.PI/100 * Math.sin(param * 0.91);
+	set_head(
+		0, //Math.sin(frame_no * 0.1) * 0.4,
+	    -Math.sin(head_param) * 0.2 - 0.3
+	)
+	set_spine_base(Math.PI/6 + situp);
+	set_tail(
+	    Math.sin(param) * 0.2 - 0.2,
+	    Math.sin(param) * 0.2 - 0.0,
+	    Math.sin(param) * 0.2 + 0.3,
+	
+	);
+	set_front_left(
+	    -Math.PI/2 + Math.PI/32 * Math.sin(front_param),
+	    0,
+	    0
+	);
+	set_front_right(
+	    -Math.PI/16 - Math.PI/4 + Math.PI/32 * Math.sin(front_param),
+	    0, //Math.PI/10, // - Math.PI/4 + Math.PI/4 * Math.sin(frame_no * 0.1),
+	    0
+	);
+	set_back_left(
+	    -Math.PI/8 * Math.sin(-Math.PI/2 + 3 * situp),
+	    Math.PI/8 * Math.sin(-Math.PI/2),
+	    -Math.PI/4 - Math.PI/6 * Math.sin(-Math.PI/2),
+	);
+	var bl_param = Math.PI/2;
+	set_back_right(
+	    -Math.PI/8 * Math.sin(-Math.PI/2 + 3 * situp),
+	    -Math.PI/8 + Math.PI/8 * Math.sin(Math.PI/2),
+	    Math.PI/4 + Math.PI/6 * Math.sin(-Math.PI/2 + bl_param),
+	);
+}
+
+
+function gripping(){
+    return [
+		"walking",
+		"sitting",
+		"holding_on"
+	].includes(state["action"]);
+}
+
+function still(){
+    return [
+		"sitting",
+		"holding_on"
+	].includes(state["action"]);
+}
+
+function falling(){
+    return [
+		"freefall",
+		"jumping"
+	].includes(state["action"]);
+}
+
+const pace = 1;//0.6;
 var frame_no = 0;
 const animate = function () {
 	requestAnimationFrame( animate );
 	
-	frame_no++;
-	if(frame_no % 100000000 == 0){
-		var mean_point = calculate_down();
-		squirrel_up = squirrel.position.clone().sub(mean_point).normalize();
-		squirrel_left = squirrel_up.clone().cross(squirrel_dir).normalize();
-		// resolve the direction to be perpendicular to the up vector
-		squirrel_dir = squirrel_left.clone().cross(squirrel_up);
+	if (!map_loaded){
+		return;
 	}
-	else{
-		const gaze_f = squirrel_dir.clone().sub(squirrel_up);
-		const gaze_b = squirrel_dir.clone().negate().sub(squirrel_up);
-		const width = 0.5;
-		const gaze_l = squirrel_left.clone().multiplyScalar(width).sub(squirrel_up);
-		const gaze_r = squirrel_left.clone().multiplyScalar(-width).sub(squirrel_up);
+	
+	frame_no++;
+	const gaze_f = squirrel_dir.clone().sub(squirrel_up);
+	const gaze_b = squirrel_dir.clone().negate().sub(squirrel_up);
+	const width = 0.3;
+	const gaze_l = squirrel_left.clone().multiplyScalar(width).sub(squirrel_up);
+	const gaze_r = squirrel_left.clone().multiplyScalar(-width).sub(squirrel_up);
 
-		const target_f = get_intersect(gaze_f);
-		const target_b = get_intersect(gaze_b);
-		const target_l = get_intersect(gaze_l);
-		const target_r = get_intersect(gaze_r);
-		
-		if (indicators){
-		    indicatorf.position.x = target_f.point.x;
-		    indicatorf.position.y = target_f.point.y;
-		    indicatorf.position.z = target_f.point.z;
-		    
-		    indicatorb.position.x = target_b.point.x;
-		    indicatorb.position.y = target_b.point.y;
-		    indicatorb.position.z = target_b.point.z;
-		    
-		    indicatorl.position.x = target_l.point.x;
-		    indicatorl.position.y = target_l.point.y;
-		    indicatorl.position.z = target_l.point.z;
-		    
-		    indicatorr.position.x = target_r.point.x;
-		    indicatorr.position.y = target_r.point.y;
-		    indicatorr.position.z = target_r.point.z;
-		}
-		
-		var target_f_point = target_f.point;
-		var target_b_point = target_b.point;
-		if (target_f.distance > squirrel_elevation * 2){
+	const target_f = get_intersect(gaze_f);
+	const target_b = get_intersect(gaze_b);
+	const target_l = get_intersect(gaze_l);
+	const target_r = get_intersect(gaze_r);
+	
+	if (indicators){
+	    indicatorf.position.x = target_f.point.x;
+	    indicatorf.position.y = target_f.point.y;
+	    indicatorf.position.z = target_f.point.z;
+	    
+	    indicatorb.position.x = target_b.point.x;
+	    indicatorb.position.y = target_b.point.y;
+	    indicatorb.position.z = target_b.point.z;
+	    
+	    indicatorl.position.x = target_l.point.x;
+	    indicatorl.position.y = target_l.point.y;
+	    indicatorl.position.z = target_l.point.z;
+	    
+	    indicatorr.position.x = target_r.point.x;
+	    indicatorr.position.y = target_r.point.y;
+	    indicatorr.position.z = target_r.point.z;
+	}
+	
+	for (var i = 0; i < hoops.length; ++i){
+	    hoops[i].rotation.y += 0.01;
+	}
+	
+	var target_f_point = target_f.point;
+	var target_b_point = target_b.point;
+	if (gripping()){
+		var eps = 0.2;
+	    if (target_f.distance > squirrel_elevation * 2){
             target_f_point = squirrel.position.clone().add(
                 squirrel_dir.clone().sub(
-                    squirrel_up.clone().multiplyScalar(1.05)
+                    squirrel_up.clone().multiplyScalar(1 + eps)
                 ).multiplyScalar(squirrel_elevation)
             )
-		}
-		if (target_b.distance > squirrel_elevation * 2){
+			console.log("trying to correct...");
+	    }
+	    if (target_b.distance > squirrel_elevation * 2){
             target_b_point = squirrel.position.clone().add(
                 squirrel_dir.clone().negate().sub(
-                    squirrel_up.clone().multiplyScalar(0.95)
+                    squirrel_up.clone().multiplyScalar(1 - eps)
                 ).multiplyScalar(squirrel_elevation)
             )
-		}
-		
-		const freefall_limit = squirrel_elevation * 3;
-		if (((target_f.distance > freefall_limit) &&
-	        (target_b.distance > freefall_limit)) &&
-	        ((target_l.distance > freefall_limit) &&
-	        (target_r.distance > freefall_limit))
-	    ){
-	        squirrel_up = new THREE.Vector3(0, 1, 0);
-			squirrel_dir = new THREE.Vector3(0, 0, 1);
-			squirrel_left = new THREE.Vector3(-1, 0, 0);
-			console.log("IN FREEFALL");
-	        freefall = true;
-	    }else{
-	        freefall = false;
 	    }
-		//console.log(target_r);
-		
-		set_head(
-			0, //Math.sin(frame_no * 0.1) * 0.4,
-		    -Math.sin(frame_no * pace) * 0.2
-		)
-		
-		set_tail(
-		    Math.sin(frame_no * pace) * 0.5 + 0.3,
-		    Math.sin(frame_no * pace) * 0.5 + 0.3,
-		    Math.sin(frame_no * pace) * 0.5 - 0.3,
-		
-		);
-		
-		set_front_left(
-		    -Math.PI/2 + Math.PI/4 * Math.sin(frame_no * pace),
-		    0,
-		    0
-		);
-		
-		set_front_right(
-		    -Math.PI/16 - Math.PI/4 + Math.PI/4 * Math.sin(Math.PI + frame_no * pace),
-		    0, //Math.PI/10, // - Math.PI/4 + Math.PI/4 * Math.sin(frame_no * 0.1),
-		    0
-		);
-		
-		set_back_left(
-		    -Math.PI/8 * Math.sin(frame_no * pace),
-		    Math.PI/8 * Math.sin(frame_no * pace),
-		    -Math.PI/4 - Math.PI/6 * Math.sin(frame_no * pace),
-		);
-		
-		set_back_right(
-		    -Math.PI/8 * Math.sin(Math.PI + frame_no * pace),
-		    -Math.PI/8 + Math.PI/8 * Math.sin(Math.PI + frame_no * pace),
-		    Math.PI/4 + Math.PI/6 * Math.sin(Math.PI + frame_no * pace),
-		);
-		
-		
-		if (!freefall){
-			squirrel_dir = target_f_point.clone().sub(target_b_point).normalize();
-			const left_right = target_l.point.clone().sub(target_r.point).normalize();
-			squirrel_up = squirrel_dir.clone().cross(left_right.clone().negate()).normalize();
-			squirrel_left = squirrel_up.clone().cross(squirrel_dir.clone()).normalize().negate();
-			var new_pos = target_b.point.clone().lerp(target_f_point, 0.5).add(squirrel_up.clone().multiplyScalar(squirrel_elevation));
-			if (new_pos.distanceTo(squirrel.position) > squirrel_elevation){
-			    new_pos = squirrel.position.clone();
-			    console.log("not going to new position");
-			}
-			squirrel.position.set(new_pos.x, new_pos.y, new_pos.z);
+		const to_freefall_limit = squirrel_elevation * 3;
+	    if (((target_f.distance > to_freefall_limit) &&
+            (target_b.distance > to_freefall_limit)) &&
+            ((target_l.distance > to_freefall_limit) &&
+            (target_r.distance > to_freefall_limit))
+        ){
+		    console.log("IN FREEFALL");
+            state["action"] = "freefall";
+            state["velocity"] = new THREE.Vector3(0, 0, 0);
+        }
+	}
+	
+	if (state["action"] == "jumping"){
+	    state["time"] += 1;
+	    set_jumping_pose();
+	}
+    
+    if(falling()){
+        if (((squirrel_up.x == 0) && (squirrel_up.y == -1)) && (squirrel_up.z == 0)){
+            squirrel_up = new THREE.Vector3(0, 1, 0);
+        }
+        else{
+    	    squirrel_up.lerp(new THREE.Vector3(0, 1, 0), 0.1).normalize();
+    	}
+		squirrel_dir = squirrel_up.clone().cross(squirrel_left).normalize();
+		squirrel_left = squirrel_up.clone().cross(squirrel_dir).normalize().negate();
+		const from_freefall_limit = squirrel_elevation * 1.5;
+	    if (((target_f.distance < from_freefall_limit) ||
+            (target_b.distance < from_freefall_limit)) ||
+            ((target_l.distance < from_freefall_limit) ||
+            (target_r.distance < from_freefall_limit))
+        ){
+            if(state["velocity"].dot(squirrel_up) < 0){
+                start_walking();
+            }
+        }
+        state["velocity"].add(new THREE.Vector3(0, -0.001, 0));
+		const terminal_velocity = from_freefall_limit/2;
+		if (state["velocity"].length() > terminal_velocity){
+			state["velocity"].normalize().multiplyScalar(terminal_velocity);
+		}
+	    squirrel.position.add(state["velocity"]);
+    }
+	
+	if (still()){
+		state["time"] += 1;
+		if (state["action"] == "sitting"){
+			set_sitting_pose();
+		}
+		else if (state["action"] == "holding_on"){
+			set_holding_on_pose();
 		}
 	}
 
-	if (freefall){
-		squirrel.position.add(squirrel_up.clone().multiplyScalar(-1/60));
+	if (state["action"] == "walking"){
+		state["time"] += 1;
+	    set_walking_pose(frame_no * pace);
+		squirrel_dir = target_f_point.clone().sub(target_b_point).normalize();
+		const left_right = target_l.point.clone().sub(target_r.point).normalize();
+		squirrel_up = squirrel_dir.clone().cross(left_right.clone().negate()).normalize();
+		squirrel_left = squirrel_up.clone().cross(squirrel_dir.clone()).normalize().negate();
+		var new_pos = target_b.point.clone().lerp(target_f_point, 0.5).add(
+		    squirrel_up.clone().multiplyScalar(squirrel_elevation)
+		);
+		if (new_pos.distanceTo(squirrel.position) > squirrel_elevation){
+		    console.log("not going to new position");
+		    console.log(new_pos.distanceTo(squirrel.position));
+		    new_pos = squirrel.position.clone();
+		}
+		squirrel.position.set(new_pos.x, new_pos.y, new_pos.z);
+		squirrel.position.add(squirrel_dir.clone().multiplyScalar(pace*1.5/60));
+		if (state["time"] > 15000000){
+			if (squirrel_up.dot(new THREE.Vector3(0, 1, 0)) > 0.8){
+				state["action"] = "sitting";
+			}
+			else{
+				state["action"] = "holding_on";
+			}
+		}
 	}
-	else{
-		squirrel.position.add(squirrel_dir.clone().multiplyScalar(pace*3/60));
-	}
+	console.log(state["action"]);
+	//console.log(state["action"] in ["sitting"]);
+	
 	const m = (new THREE.Matrix4()).makeBasis(
-		squirrel_left.clone().multiplyScalar(-0.05),
-		squirrel_up.clone().multiplyScalar(0.05), //
-	    squirrel_dir.clone().multiplyScalar(-0.05) 
-	).transpose(); // ugh
-	squirrel.matrix.set(...m.elements);
-	squirrel.matrix.setPosition( squirrel.position );
+	    squirrel_left.clone().multiplyScalar(-0.05),
+	    squirrel_up.clone().multiplyScalar(0.05), //
+        squirrel_dir.clone().multiplyScalar(-0.05) 
+    ).transpose(); // ugh
+    squirrel.matrix.set(...m.elements);
+	
+	if (state["action"] != "frozen"){
+		squirrel.matrix.setPosition( squirrel.position );
+	}
 	squirrel.matrixAutoUpdate = false;
 	
-	var cam_direction = squirrel.position.clone().sub(camera.position).normalize();
-	camera.position.x = squirrel.position.x - cam_direction.x * cam_distance;
-	camera.position.z = squirrel.position.z - cam_direction.z * cam_distance;
-	camera.position.y = squirrel.position.y + cam_height;
-	camera.lookAt(squirrel.position.x, squirrel.position.y, squirrel.position.z);
+	if (!state["map_editing"]){
+		raycaster.set(camera.position, new THREE.Vector3(0, -1, 0));
+		const intersects = raycaster.intersectObjects(scene.children, true);
+	    var cam_direction = squirrel.position.clone().sub(camera.position);
+		if (intersects[0].distance < cam_height){
+			console.log(intersects);
+			cam_direction.y -= (cam_height - intersects[0].distance);
+		}else{
+			//cam_direction.y += 0.005;
+		}
+		//if (cam_direction.y > 0){
+		//	cam_direction.y = 0;
+		//}
+		console.log(intersects);
+		cam_direction.normalize();
+	    camera.position.lerp(squirrel.position.clone().sub(cam_direction.clone().multiplyScalar(cam_distance)), 0.2);
+	    camera.lookAt(squirrel.position.x, squirrel.position.y, squirrel.position.z);
+	}
 	renderer.render( scene, camera );
 };
 
+var music_playing = false;
+function play_music(){
+    var audio = new Audio('sounds/squirrel song.mp3');
+    var playPromise = audio.play();
+}
+
+function start_walking(){
+	state["action"] = "walking";
+	state["time"] = 0;
+}
+
 document.onkeydown = function(e) {
-    console.log("KEYDOWN");
+    if (!music_playing){
+        play_music();
+        music_playing=true;
+    }
 	var cam_direction = new THREE.Vector3(
 		squirrel.position.x - camera.position.x,
 		squirrel.position.y - camera.position.y,
@@ -539,50 +847,114 @@ document.onkeydown = function(e) {
 	cam_orthogonal.cross(cam_direction);
 	const eps = 0.1;
 	const cameps = 0.1;
-	console.log(e.keyCode);
+	const cameps_vertical = 0.1;
+	const roteps = 0.01;
     switch (e.keyCode) {
-      case 37: // right
-	      squirrel_dir = new THREE.Vector3(
-		    squirrel_dir.x + eps * cam_orthogonal.x,
-		    squirrel_dir.y + eps * cam_orthogonal.y,
-		    squirrel_dir.z + eps * cam_orthogonal.z
-	      ).normalize();
-      break;
-      case 38:
-	      squirrel_dir = new THREE.Vector3(
-		    squirrel_dir.x + eps * cam_direction.x,
-		    squirrel_dir.y + eps * cam_direction.y,
-		    squirrel_dir.z + eps * cam_direction.z
-	      ).normalize();
-      break;
-	  case 39: // left
-	      squirrel_dir = new THREE.Vector3(
-		    squirrel_dir.x - eps * cam_orthogonal.x,
-		    squirrel_dir.y - eps * cam_orthogonal.y,
-		    squirrel_dir.z - eps * cam_orthogonal.z
-	      ).normalize();
-      break;
-	  case 40:
-	      squirrel_dir = new THREE.Vector3(
-		    squirrel_dir.x - eps * cam_direction.x,
-		    squirrel_dir.y - eps * cam_direction.y,
-		    squirrel_dir.z - eps * cam_direction.z
-	      ).normalize();
-      break;
-	  case 32: //  space
-	  squirrel.position.y = squirrel.position.y + 1;
-      break;
-      case 65: // a key, camera left
-          console.log("camera left");
-	      camera.position.x += cameps * cam_orthogonal.x;
-	      camera.position.y += cameps * cam_orthogonal.y;
-	      camera.position.z += cameps * cam_orthogonal.z;
-      break;
-      case 68: // d key, camera right
-	      camera.position.x -= cameps * cam_orthogonal.x;
-	      camera.position.y -= cameps * cam_orthogonal.y;
-	      camera.position.z -= cameps * cam_orthogonal.z;
-      break;
+		case 37: // right
+			if (still()){
+				start_walking();
+			}
+			if (state["action"] == "walking"){
+				squirrel_dir.sub(squirrel_left.clone().multiplyScalar(eps)).normalize();
+				state["time"] = 0;
+			}
+		break;
+		case 38:
+			if (still()){
+				start_walking();
+			}
+			if (state["action"] == "walking"){
+				state["time"] = 0;
+			}
+		break;
+		case 39: // left
+			if (still()){
+				start_walking();
+			}
+			if (state["action"] == "walking"){
+				squirrel_dir.add(squirrel_left.clone().multiplyScalar(eps)).normalize();
+				state["time"] = 0;
+			}
+		break;
+		case 40:
+			if (state["action"] == "walking"){
+				squirrel_dir.sub(cam_direction.clone().multiplyScalar(eps)).normalize();
+				state["time"] = 0;
+			}
+		break;
+		case 32: //  space initiates jump
+		  if (gripping()){
+			  state["action"] = "jumping";
+			  state["time"] = 0;
+			  state["velocity"] = squirrel_dir.clone().add(
+				  squirrel_up.multiplyScalar(0.5)
+			  ).multiplyScalar(0.02);
+		  }
+		break;
+		case "U".charCodeAt(0): //  u makes squirrel go up
+		squirrel.position.y = squirrel.position.y + 1;
+		break;
+		case "D".charCodeAt(0): // a key, camera left
+			if (!state["map_editing"]){
+				camera.position.sub(cam_orthogonal.clone().multiplyScalar(cameps));
+			}
+			else {
+				camera.rotation.y -= roteps;
+			}
+		break;
+		case "A".charCodeAt(0):
+			if (!state["map_editing"]){
+				camera.position.add(cam_orthogonal.clone().multiplyScalar(cameps));
+			}
+			else {
+				camera.rotation.y += roteps;
+			}
+		break;
+		case "C".charCodeAt(0):
+		  camera.position.add(new THREE.Vector3(cameps, 0, 0));
+		break;
+		case "Z".charCodeAt(0):
+		  camera.position.add(new THREE.Vector3(-cameps, 0, 0));
+		break;
+		case "S".charCodeAt(0): // s key, camera back
+			if (!state["map_editing"]){
+				console.log("down");
+				camera.position.sub(new THREE.Vector3(0, cameps_vertical, 0));
+			}
+			else {
+				camera.position.sub(new THREE.Vector3(0, 0, cameps));
+			}
+		  camera.position.add(new THREE.Vector3(0, 0, cameps));
+		break;
+		case "W".charCodeAt(0): // w key, camera forward
+			if (!state["map_editing"]){
+				console.log("up");
+				camera.position.add(new THREE.Vector3(0, cameps_vertical, 0));
+			}
+			else {
+				camera.position.sub(new THREE.Vector3(0, 0, cameps));
+			}
+		break;
+		case "E".charCodeAt(0): // e key, up
+		  camera.position.add(new THREE.Vector3(0, cameps, 0));
+		break;
+		case "Q".charCodeAt(0): // q key, camera down
+		  camera.position.sub(new THREE.Vector3(0, cameps, 0));
+		break;
+		case "R".charCodeAt(0): // e key, up
+		  camera.rotation.x += roteps;
+		break;
+		case "F".charCodeAt(0): // q key, camera down
+		  camera.rotation.x -= roteps;
+		break;
+		case "L".charCodeAt(0): // q key, camera down
+			if (state["action"] == "walking"){
+				state["action"] = "sitting";
+			}
+			else if (state["action"] == "sitting"){
+				state["action"] = "walking";
+			}
+		break;
     }
     var cam_direction = new THREE.Vector3(
 		squirrel.position.x - camera.position.x,
@@ -592,21 +964,32 @@ document.onkeydown = function(e) {
 	cam_direction.y = 0;
 	cam_direction.normalize();
 	
-	console.log(squirrel_dir);
-	
 	var angle = squirrel_dir.angleTo(new THREE.Vector3(0, 0, -1));
 	if (squirrel_dir.x > 0){
 		angle = -angle;
 	}
-	//squirrel.rotation.y = angle;
-	console.log(squirrel.rotation.y);
 };
 
 function onDocumentMouseWheel( event ) {
 
 }
 
+function onDocumentClick( event ) {
+    console.log("click");
+    console.log(event);
+    
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+	
+	raycaster.setFromCamera( mouse, camera );
+	const intersects = raycaster.intersectObjects(scene.children, true);
+	add_nut(intersects[0].point);
+	item_positions.push(intersects[0].point);
+	console.log(item_positions);
+}
+
 document.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
+document.addEventListener( 'click', onDocumentClick, false );
 
 animate();
 
