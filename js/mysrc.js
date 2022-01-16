@@ -365,10 +365,10 @@ add_trees(big_tree_positions, 0.4, 4);
 add_trees(variation_tree_positions, 0.4, 5);
 
 var acorns = [];
-add_nuts(acorn_positions.slice(0, 1));
+add_nuts(acorn_positions);
 
 var golden_acorns = [];
-add_golden_nuts(golden_acorn_positions.slice(0, 1));
+add_golden_nuts(golden_acorn_positions);
 
 var hoops = [];
 for (var t = 0; t < 30; ++t){
@@ -420,6 +420,7 @@ var state = {
     "velocity": new THREE.Vector3(0, 0, 0),
     "map_editing": false,
     "game_stage": "loading",
+    "start_time": 0,
 }
 if (state["map_editing"]){
 	camera.position.x = 0;
@@ -792,11 +793,18 @@ const animate = function () {
 
 	}
 	
-	if (acorn_count + golden_count == 0){
+	if (!state["won"] && state["game_stage"] == "playing"){
+	    const date = new Date();
+	    document.getElementById('clock').innerHTML = (date.getTime() - state["start_time"]) / 1000 + "s";
+	}
+	
+	if (!state["won"] && (acorn_count + golden_count == 0)){
 	    console.log("you won!");
 	    state["game_stage"] = "title_screen";
+	    state["won"] = true;
 	    document.getElementById('win_screen').hidden = false;
 	    document.getElementById('score_div').hidden = false;
+	    stay_still();
 	}
 	document.getElementById('acorn_count').innerHTML= acorn_count;
 	document.getElementById('golden_acorn_count').innerHTML= golden_count;
@@ -952,7 +960,7 @@ const animate = function () {
         )
     )
     
-    if (state["game_stage"] == "title_screen"){
+    if (state["game_stage"] == "title_screen" || state["won"]){
         var cam_direction = squirrel.position.clone().sub(camera.position);
         cam_direction.normalize();
 		camera.position.sub(cam_direction.cross(new THREE.Vector3(0, 1, 0)).multiplyScalar(0.01));
@@ -1062,6 +1070,8 @@ document.onkeydown = function(e) {
     if (state["game_stage"] == "title_screen"){
         document.getElementById("title_screen").hidden = true;
         state["game_stage"] = "playing";
+        const date = new Date();
+        state["start_time"] = date.getTime();
     }
 	var cam_direction = new THREE.Vector3(
 		squirrel.position.x - camera.position.x,
