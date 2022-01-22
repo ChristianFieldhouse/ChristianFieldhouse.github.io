@@ -3,6 +3,7 @@
 //import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
 import {
     acorn_positions,
+    oasis_acorns,
     squirrel_pose,
     squirrel_bones,
     og_tree_positions,
@@ -164,10 +165,13 @@ function everything_loaded(){
         loaded["golden_acorns"]
     );
     if (r){
+        console.log("finished loading...")
         document.getElementById("loading_screen").hidden = true;
         document.getElementById("title_screen").hidden = false;
         document.getElementById("sound_button").hidden = false;
         document.getElementById("acorn_count").hidden = false;
+        document.getElementById("hint_button").hidden = false;
+        document.getElementById("health_bar").hidden = false;
         document.getElementById("golden_acorn_count").hidden = false;
         state["game_stage"] = "title_screen";
         return true;
@@ -245,7 +249,7 @@ function add_nut(xyz){
 			gltf.scene.rotation.y = Math.PI * 2 * Math.random();
 			gltf.scene.position.set(xyz.x, xyz.y + up_shift, xyz.z);
 			scene.add(gltf.scene);
-			acorns.push(gltf.scene);
+			//acorns.push(gltf.scene);
 			acorn_model_0 = gltf.scene.clone(true);
 		}, undefined, function ( error ) {
 			console.error( error );
@@ -257,7 +261,7 @@ function add_nut(xyz){
 		new_nut.rotation.y = Math.PI * 2 * Math.random();
 		new_nut.position.set(xyz.x, xyz.y + up_shift, xyz.z);
 		scene.add(new_nut);
-		acorns.push(new_nut);
+		//acorns.push(new_nut);
 	}
 }
 
@@ -365,7 +369,18 @@ add_trees(big_tree_positions, 0.4, 4);
 add_trees(variation_tree_positions, 0.4, 5);
 
 var acorns = [];
-add_nuts(acorn_positions);
+var random_acorn_positions = [];
+for (var i = 0; i < oasis_acorns.length; ++i){
+    random_acorn_positions.push(oasis_acorns[i]);
+}
+const target_acorn_total = acorn_positions.length / 3;
+while (random_acorn_positions.length < target_acorn_total){
+    var new_pos = acorn_positions[Math.floor(Math.random() * acorn_positions.length)];
+    if (!random_acorn_positions.includes(new_pos)){
+        random_acorn_positions.push(new_pos);
+    }
+}
+add_nuts(random_acorn_positions);
 
 var golden_acorns = [];
 add_golden_nuts(golden_acorn_positions);
@@ -421,6 +436,8 @@ var state = {
     "map_editing": false,
     "game_stage": "loading",
     "start_time": 0,
+    "score": 0,
+    "frames_left": 1000,
 }
 if (state["map_editing"]){
 	camera.position.x = 0;
@@ -682,6 +699,16 @@ function stay_still(){
 	state["time"] = 0;
 }
 
+function show_winscreen(){
+	console.log("you won!");
+    state["game_stage"] = "title_screen";
+    state["won"] = true;
+    document.getElementById('win_screen').hidden = false;
+    document.getElementById('score_div').hidden = false;
+    document.getElementById('score_paragraph').innerHTML = "You scored " + state["score"] + "!";
+    stay_still();
+}
+
 var frame_no = 0;
 const to_freefall_limit = squirrel_elevation * 3;
 const from_freefall_limit = squirrel_elevation * 1;
@@ -771,43 +798,69 @@ const animate = function () {
 	}
 	
 	//cosole.log(acorns);
-	var acorn_count = 0;
-	for (var i = 0; i < acorns.length; ++i){
-	    if (acorns[i].visible){
-	        acorn_count += 1;
-	        if (squirrel.position.distanceTo(acorns[i].position) < 4 * squirrel_elevation){
-	            acorns[i].visible = false;
-	            play_munch();
-	        }
-	    }
-	}
-	var golden_count = 0;
-	for (var i = 0; i < golden_acorns.length; ++i){
-	    if (golden_acorns[i].visible){
-	        golden_count += 1;
-	        if (squirrel.position.distanceTo(golden_acorns[i].position) < 4 * squirrel_elevation){
-	            golden_acorns[i].visible = false;
-	            play_munch();
-	        }
-	    }
+    const acorn_time = 30;
+    var acorn_count = 0;
+    for (var i = 0; i < acorns.length; ++i){
+        if (acorns[i].visible){
+            acorn_count += 1;
+            if (squirrel.position.distanceTo(acorns[i].position) < 4 * squirrel_elevation){
+                acorns[i].visible = false;
+                play_munch();
+                state["score"] += 1;
+                state["frames_left"] += acorn_time;
+                document.getElementById("hint_button").innerHTML = "Hint";
+            }
+        }
+    }
+    if (acorn_count < acorns.length/10){
+        hint_number = 3;
+        document.getElementById("hint_button").style.color = "red";
+    }
+    else if (acorn_count < acorns.length/5){
+        hint_number = 2;
+        document.getElementById("hint_button").style.color = "orange";
+    }
+    else if (acorn_count < acorns.length/2){
+        hint_number = 1;
+        document.getElementById("hint_button").style.color = "yellow";
+    }
 
+    var golden_count = 0;
+    for (var i = 0; i < golden_acorns.length; ++i){
+        if (golden_acorns[i].visible){
+            golden_count += 1;
+            if (squirrel.position.distanceTo(golden_acorns[i].position) < 4 * squirrel_elevation){
+                golden_acorns[i].visible = false;
+                state["score"] += 10;
+                state["frames_left"] += acorn_time * 10;
+                play_munch();
+            }
+        }
+
+    }
+    
+    if (state["game_stage"] == "playing"){
+	    document.getElementById('acorn_count').innerHTML= acorns.length - acorn_count;
+	    document.getElementById('golden_acorn_count').innerHTML= golden_acorns.length - golden_count;
 	}
 	
 	if (!state["won"] && state["game_stage"] == "playing"){
+	    state["frames_left"] -= 1;
 	    const date = new Date();
-	    document.getElementById('clock').innerHTML = (date.getTime() - state["start_time"]) / 1000 + "s";
+	    document.getElementById('health_bar').style.backgroundColor = (
+	        "rgb(" + Math.min(Math.max(255 - state["frames_left"] * 255 / 1000, 0), 255) + ", " +
+	        Math.min(state["frames_left"] * 255 / 1000, 255) + ", 0)"
+	    );
+	    document.getElementById('health_bar').style.width = (state["frames_left"] * 50 / 1000) + "%";
+	    if (state["frames_left"] == 0){
+	        show_winscreen();
+	    }
 	}
 	
 	if (!state["won"] && (acorn_count + golden_count == 0)){
-	    console.log("you won!");
-	    state["game_stage"] = "title_screen";
-	    state["won"] = true;
-	    document.getElementById('win_screen').hidden = false;
-	    document.getElementById('score_div').hidden = false;
-	    stay_still();
+	    // hopefully this condition isn't easily met...
+        show_winscreen();
 	}
-	document.getElementById('acorn_count').innerHTML= acorn_count;
-	document.getElementById('golden_acorn_count').innerHTML= golden_count;
     
     if(falling()){
         if (((squirrel_up.x == 0) && (squirrel_up.y == -1)) && (squirrel_up.z == 0)){
@@ -870,11 +923,12 @@ const animate = function () {
 	    state["time"] += 1;
 		var target_direction = new THREE.Vector3(0, 0, 0);
 		var closest_distance = 1000000;
-	    for (var i = 0; i < acorns.length; ++i){
-	    	if (acorns[i].visible){
-	            const distance = squirrel.position.distanceTo(acorns[i].position);
+		var all_acorns = acorns.concat(golden_acorns);
+	    for (var i = 0; i < all_acorns.length; ++i){
+	    	if (all_acorns[i].visible){
+	            const distance = squirrel.position.distanceTo(all_acorns[i].position);
 	            if (distance < closest_distance){
-                    target_direction = acorns[i].position.clone().sub(squirrel.position).normalize();
+                    target_direction = all_acorns[i].position.clone().sub(squirrel.position).normalize();
                     closest_distance = distance;
 	            }
 	        }
@@ -960,7 +1014,7 @@ const animate = function () {
         )
     )
     
-    if (state["game_stage"] == "title_screen" || state["won"]){
+    if (state["game_stage"] == "title_screen"){
         var cam_direction = squirrel.position.clone().sub(camera.position);
         cam_direction.normalize();
 		camera.position.sub(cam_direction.cross(new THREE.Vector3(0, 1, 0)).multiplyScalar(0.01));
@@ -994,7 +1048,7 @@ var munch_audio_christian = new Audio('sounds/munch_christian.mp3');
 var local_sounds = [
     [new THREE.Vector3(-64, 0, 65), 15, new Audio('sounds/ufo_sound.mp3')],
     [new THREE.Vector3(15, 0, -59), 5, new Audio('sounds/fire_sound.mp3')],
-    [new THREE.Vector3(-58, 0, -28), 3, new Audio('sounds/alien.mp3')],
+    [new THREE.Vector3(-58, 0, 28), 3, new Audio('sounds/alien.mp3')],
 ];
 function play_music(){
     var playPromise = audio.play();
@@ -1061,18 +1115,22 @@ function back(){
 	}
 }
 
-const max_pace = Math.min(10, pace_glitch_limit);
-document.onkeydown = function(e) {
+function input_react(){
     if (!music_playing){
         play_music();
         music_playing=true;
     }
-    if (state["game_stage"] == "title_screen"){
+    if (state["game_stage"] == "title_screen" && !(state["won"] && !score_submitted)){
         document.getElementById("title_screen").hidden = true;
         state["game_stage"] = "playing";
         const date = new Date();
         state["start_time"] = date.getTime();
     }
+}
+
+const max_pace = Math.min(10, pace_glitch_limit);
+document.onkeydown = function(e) {
+    input_react();
 	var cam_direction = new THREE.Vector3(
 		squirrel.position.x - camera.position.x,
 		squirrel.position.y - camera.position.y,
@@ -1185,6 +1243,7 @@ document.onkeydown = function(e) {
 };
 
 document.ontouchstart = function(e) {
+    input_react();
     if (e.touches[0].clientX > window.innerWidth/2){
         left();
     }
@@ -1215,7 +1274,7 @@ function onDocumentClick( event ) {
 	    
 	    raycaster.setFromCamera( mouse, camera );
 	    const intersects = raycaster.intersectObjects(scene.children, true);
-	    add_golden_nut(intersects[0].point);
+	    add_nut(intersects[0].point);
 	    item_positions.push(intersects[0].point);
 	    console.log(item_positions);
 	}

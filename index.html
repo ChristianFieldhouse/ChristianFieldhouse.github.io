@@ -34,28 +34,44 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.js"></script>
 		<script src="https://unpkg.com/three@0.127.0/examples/js/loaders/GLTFLoader.js"></script>
 		<script>
-		var muted = false;
-        function mute(){
-            muted = !muted;
-            console.log("button clicked!", muted);
-            console.log(document.getElementById("sound_button").innerHTML.src);
-            if (muted){
-                document.getElementById("sound_button").innerHTML = '<img src="images/music_off.png">';
-            }else{
-                document.getElementById("sound_button").innerHTML = '<img src="images/music_on.png">';
+		    var muted = false;
+		    var score_submitted = false;
+            function mute(){
+                muted = !muted;
+                console.log("button clicked!", muted);
+                console.log(document.getElementById("sound_button").innerHTML.src);
+                if (muted){
+                    document.getElementById("sound_button").innerHTML = '<img src="images/music_off.png">';
+                }else{
+                    document.getElementById("sound_button").innerHTML = '<img src="images/music_on.png">';
+                }
+                document.getElementById("sound_button").blur()
             }
-        }
+            var hint_number = 0;
+            function hint(){
+                document.getElementById("hint_button").innerHTML = [
+                    "Nutty is hungry, go get some nuts!",
+                    "Nutty has a good sense of smell...",
+                    "Maybe nutty will show you the way",
+                    "If nutty gets a rest, he might be able to smell the nuts"
+                ][hint_number]
+                document.getElementById("hint_button").blur()
+            }
+            var gold_multiplyer = 10;
         </script>
         <script src="js/mysrc.js" type="module"></script>
         <button style="top:0; border:0px solid black; background-color: transparent;" id="sound_button" class="ui" onclick="mute()" hidden><img src="images/music_on.png"></button>
+        <button style="top:90%; border:0px solid black; background-color: transparent; font-size:50px; color:white;" id="hint_button" class="ui" onclick="hint()" hidden>Hint</button>
         <p style="right:0; padding: 30px; border:0px solid black; color: brown; font-size:30px; background-color: transparent;" id="acorn_count" class="ui" hidden>0</p>
         <p style="right:0; padding: 30px; border:0px solid black; color: yellow; font-size:30px; background-color: transparent; padding-top: 0%;" id="golden_acorn_count" class="ui" hidden>0</p>
-        <p style="right:0; bottom:0; padding: 30px; border:0px solid black; color: white; font-size:30px; background-color: transparent;" id="clock" class="ui">0s</p>
+        <div style="right:2%; bottom:2%; border:1px solid black; background-color: green; width:50%; height:1%" class="ui" id="health_bar" hidden></div>
+        <!--p style="right:0; bottom:0; padding: 30px; border:0px solid black; color: white; font-size:30px; background-color: transparent;" id="clock" class="ui" hidden>frames left</p-->
         <img src="images/loading_screen.svg" height="100%" width="100%" class="title_screen" id="loading_screen" style="background-color: transparent;">
         <img src="images/title_screen.svg" height="100%" width="100%" class="title_screen" id="title_screen" style="background-color: transparent;" hidden>
         <img src="images/win_screen.svg" height="100%" width="100%" class="title_screen" id="win_screen" style="background-color: transparent;" hidden>
         <div style="width:100%; height:100%; position:absolute; text-align:center;" hidden id="score_div">
             <div class="ui" style= "top: 70%; left: 45%">
+                <p id="score_paragraph">hello hello hello</p>
                 <input type="text" name= "Enter your name" id="name_box" style= "opacity: 0.4;" value="" placeholder="gamer name">
                 <button onclick="submit_score()">Submit Score</button>
             </div>
@@ -77,9 +93,12 @@
             }
             function submit_score(){
                 const name = document.getElementById("name_box").value;
-                const time = document.getElementById("clock").innerHTML.slice(0, -1);
+                const score = (
+                    parseInt(document.getElementById("acorn_count").innerHTML) + 
+                    parseInt(document.getElementById("golden_acorn_count").innerHTML) * gold_multiplyer
+                );
                 const url_base = "https://script.google.com/macros/s/AKfycbzBR5szqeZhBFi8nYUkribLnv4XCFMIX_q3DfANMeuL7b7p8em5f2dvy9nLl5kSUfeB/exec";
-                var url = url_base + "?user=" + name + "&score=" + time +"&callback=fill_scoreboard";
+                var url = url_base + "?user=" + name + "&score=" + score +"&callback=fill_scoreboard";
 
                 // Make an AJAX call to Google Script
                 jQuery.ajax({
@@ -91,6 +110,7 @@
                 
                 document.getElementById("score_div").style.display = 'none';
                 document.getElementById("win_screen").style.display = 'none';
+                score_submitted = true;
             }
         </script>
 
