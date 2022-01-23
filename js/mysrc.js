@@ -31,7 +31,7 @@ const smaterial = new THREE.MeshBasicMaterial( { color: 0xffa8a9 } );
 squirrel = new THREE.Mesh( squirrel_geom, smaterial );
 //scene.add( squirrel );
 const squirrel_elevation = 0.07;
-squirrel.position.set(0, squirrel_elevation, 0);
+squirrel.position.set(3, squirrel_elevation + 0.2, -3);
 squirrel.name = "squirrel";
 
 function bone(arr){
@@ -392,9 +392,14 @@ for (var t = 0; t < 30; ++t){
 
 const cam_height = 0.4;
 const cam_distance = 2;
-camera.position.x = 0;
-camera.position.y = cam_height;
-camera.position.z = -cam_distance;
+const cam_angle = 2 * Math.PI * Math.random();
+console.log(cam_angle);
+camera.position.x = squirrel.position.x + cam_distance * Math.sin(cam_angle);
+camera.position.y = squirrel.position.y + cam_height;
+camera.position.z = squirrel.position.z + cam_distance * Math.cos(cam_angle);
+var cam_direction = new THREE.Vector3(0, cam_height, cam_distance);
+console.log(cam_direction);
+
 camera.lookAt(squirrel.position.x, squirrel.position.y, squirrel.position.z);
 
 const line_material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
@@ -431,6 +436,7 @@ var squirrel_target = new THREE.Vector3(0, 0, 0);
 var state = {
     "action": "freefall",
     "pace": 0,
+    "pose_time": 0,
     "time": 0,
     "velocity": new THREE.Vector3(0, 0, 0),
     "map_editing": false,
@@ -723,6 +729,19 @@ const animate = function () {
 		return;
 	}
 	
+	if (key_states["foreward"]){
+	    foreward();
+	}
+	if (key_states["back"]){
+	    back();
+	}
+	if (key_states["left"]){
+	    left();
+	}
+	if (key_states["right"]){
+	    right();
+	}
+	
 	frame_no++;
 	const gaze_ff = squirrel_dir.clone();
 	const gaze_f = squirrel_dir.clone().sub(squirrel_up);
@@ -946,7 +965,8 @@ const animate = function () {
 
 	if (state["action"] == "walking"){
 		state["time"] += 1;
-	    set_walking_pose(frame_no * state["pace"]);
+		state["pose_time"] += state["pace"];
+	    set_walking_pose(state["pose_time"]);
 		squirrel_dir = target_f_point.clone().sub(target_b_point).normalize();
 		const left_right = target_l.point.clone().sub(target_r.point).normalize();
 		squirrel_up = squirrel_dir.clone().cross(left_right.clone().negate()).normalize();
@@ -1015,26 +1035,50 @@ const animate = function () {
     )
     
     if (state["game_stage"] == "title_screen"){
-        var cam_direction = squirrel.position.clone().sub(camera.position);
-        cam_direction.normalize();
-		camera.position.sub(cam_direction.cross(new THREE.Vector3(0, 1, 0)).multiplyScalar(0.01));
+        var title_cam_direction = squirrel.position.clone().sub(camera.position);
+        title_cam_direction.normalize();
+		camera.position.sub(title_cam_direction.cross(new THREE.Vector3(0, 1, 0)).multiplyScalar(0.01));
 	    camera.lookAt(squirrel.position.x, squirrel.position.y, squirrel.position.z);
+	    cam_direction = camera.position.clone().sub(squirrel.position).normalize();
 	}else if (!state["map_editing"]){
 		raycaster.set(camera.position, new THREE.Vector3(0, -1, 0));
 		const intersects = raycaster.intersectObjects(scene.children, true);
-	    var cam_direction = squirrel.position.clone().sub(camera.position);
-		if (intersects[0].distance < cam_height){
-			//console.log(intersects);
-			cam_direction.y -= (cam_height - intersects[0].distance);
-		}else{
-			//cam_direction.y += 0.005;
+		var actual_cam_direction = new THREE.Vector3(
+		    squirrel.position.x - camera.position.x,
+		    squirrel.position.y - camera.position.y,
+		    squirrel.position.z - camera.position.z
+	    );
+        console.log(intersects);
+	    //console.log(cam_direction);
+	    actual_cam_direction.normalize();
+	    var cam_orthogonal = new THREE.Vector3(0, 1, 0);
+	    cam_orthogonal.cross(cam_direction);
+	    const cam_eps = 0.05;
+		if (key_states["cam_left"]){
+		    cam_direction.add(cam_orthogonal.clone().multiplyScalar(cam_eps));
 		}
-		//if (cam_direction.y > 0){
-		//	cam_direction.y = 0;
-		//}
-		//console.log(intersects);
+		if (key_states["cam_right"]){
+		    cam_direction.sub(cam_orthogonal.clone().multiplyScalar(cam_eps));
+		}
+		if (key_states["cam_up"]){
+		    cam_direction.y += cam_eps;
+		}
+		if (key_states["cam_down"]){
+		    cam_direction.y -= cam_eps;
+		}
+		if (intersects[0].distance < 0.1){
+			cam_direction.y += 0.1 - intersects[0].distance;
+		}
+		if (intersects[0].point.y < -10){
+		    raycaster.set(camera.position, new THREE.Vector3(0, 1, 0));
+		    const intersects_up = raycaster.intersectObjects(scene.children, true);
+		    if (intersects_up[0].point.y < 20){
+			    cam_direction.y += 0.1;
+			}
+		}
 		cam_direction.normalize();
-	    camera.position.lerp(squirrel.position.clone().sub(cam_direction.clone().multiplyScalar(cam_distance)), 0.2);
+		
+	    camera.position.lerp(squirrel.position.clone().add(cam_direction.clone().multiplyScalar(cam_distance)), 0.2);
 	    camera.lookAt(squirrel.position.x, squirrel.position.y, squirrel.position.z);
 	}
 	
@@ -1070,7 +1114,7 @@ function start_walking(){
 	state["pace"] = 0.2;
 }
 
-const eps = 0.1;
+const eps = 0.2;
 const cameps = 0.1;
 const cameps_vertical = 0.1;
 const roteps = 0.01;
@@ -1101,18 +1145,29 @@ function foreward(){
 	}
 	if (state["action"] == "walking"){
 		state["time"] = 0;
-		state["pace"] += 0.2;
+		state["pace"] += 0.1;
         state["pace"] = Math.min(state["pace"], max_pace);
 	}
 }
 
 function back(){
 	if (state["action"] == "walking"){
-		state["pace"] -= 0.2;
+		state["pace"] -= 0.1;
 	}
 	if (state["pace"] < 0.2){
 	    stay_still();
 	}
+}
+
+var key_states = {
+    "foreward": false,
+    "back": false,
+    "left":false,
+    "right": false,
+    "cam_left": false,
+    "cam_right": false,
+    "cam_up": false,
+    "cam_down": false,
 }
 
 function input_react(){
@@ -1143,16 +1198,18 @@ document.onkeydown = function(e) {
 	cam_orthogonal.cross(cam_direction);
     switch (e.keyCode) {
 		case 37: // right
-            right();
+            key_states["right"] = true;
 		break;
 		case 38: // foreward
-            foreward();
+		    console.log("foreward!!");
+            key_states["foreward"] = true;
+            console.log(key_states);
 		break;
 		case 39: // left
-            left();
+            key_states["left"] = true;
 		break;
 		case 40: // back
-		    back();
+		    key_states["back"] = true;
 		break;
 		case 32: //  space initiates jump
 		  if (gripping()){
@@ -1167,20 +1224,10 @@ document.onkeydown = function(e) {
 		squirrel.position.y = squirrel.position.y + 1;
 		break;
 		case "D".charCodeAt(0): // a key, camera left
-			if (!state["map_editing"]){
-				camera.position.sub(cam_orthogonal.clone().multiplyScalar(cameps));
-			}
-			else {
-				camera.rotation.y -= roteps;
-			}
+		    key_states["cam_left"] = true;
 		break;
 		case "A".charCodeAt(0):
-			if (!state["map_editing"]){
-				camera.position.add(cam_orthogonal.clone().multiplyScalar(cameps));
-			}
-			else {
-				camera.rotation.y += roteps;
-			}
+			key_states["cam_right"] = true;
 		break;
 		case "C".charCodeAt(0):
 		  camera.position.add(new THREE.Vector3(cameps, 0, 0));
@@ -1188,24 +1235,11 @@ document.onkeydown = function(e) {
 		case "Z".charCodeAt(0):
 		  camera.position.add(new THREE.Vector3(-cameps, 0, 0));
 		break;
-		case "S".charCodeAt(0): // s key, camera back
-			if (!state["map_editing"]){
-				console.log("down");
-				camera.position.sub(new THREE.Vector3(0, cameps_vertical, 0));
-			}
-			else {
-				camera.position.sub(new THREE.Vector3(0, 0, cameps));
-			}
-		  camera.position.add(new THREE.Vector3(0, 0, cameps));
+		case "S".charCodeAt(0): // s key, camera down
+			key_states["cam_down"] = true;
 		break;
-		case "W".charCodeAt(0): // w key, camera forward
-			if (!state["map_editing"]){
-				console.log("up");
-				camera.position.add(new THREE.Vector3(0, cameps_vertical, 0));
-			}
-			else {
-				camera.position.sub(new THREE.Vector3(0, 0, cameps));
-			}
+		case "W".charCodeAt(0): // w key, camera up
+			key_states["cam_up"] = true;
 		break;
 		case "E".charCodeAt(0): // e key, up
 		  camera.position.add(new THREE.Vector3(0, cameps, 0));
@@ -1241,6 +1275,35 @@ document.onkeydown = function(e) {
 		angle = -angle;
 	}
 };
+
+window.onkeyup = function(e) {
+    switch (e.keyCode) {
+		case 37: // right
+            key_states["right"] = false;
+		break;
+		case 38: // foreward
+            key_states["foreward"] = false;
+		break;
+		case 39: // left
+            key_states["left"] = false;
+		break;
+		case 40: // back
+		    key_states["back"] = false;
+		break;
+		case "S".charCodeAt(0): // s key, camera down
+			key_states["cam_down"] = false;
+		break;
+		case "W".charCodeAt(0): // w key, camera up
+			key_states["cam_up"] = false;
+		break;
+		case "D".charCodeAt(0): // a key, camera left
+		    key_states["cam_left"] = false;
+		break;
+		case "A".charCodeAt(0):
+			key_states["cam_right"] = false;
+		break;
+    }
+}
 
 document.ontouchstart = function(e) {
     input_react();
