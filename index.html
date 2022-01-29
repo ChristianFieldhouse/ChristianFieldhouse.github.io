@@ -47,7 +47,7 @@
                 }
                 document.getElementById("sound_button").blur()
             }
-            var hint_number = 0;
+            /*var hint_number = 0;
             function hint(){
                 document.getElementById("hint_button").innerHTML = [
                     "Nutty is hungry, go get some nuts!",
@@ -57,11 +57,12 @@
                 ][hint_number]
                 document.getElementById("hint_button").blur()
             }
+            */
             var gold_multiplyer = 10;
         </script>
         <script src="js/mysrc.js" type="module"></script>
         <button style="top:0; border:0px solid black; background-color: transparent;" id="sound_button" class="ui" onclick="mute()" hidden><img src="images/music_on.png"></button>
-        <button style="top:90%; border:0px solid black; background-color: transparent; font-size:50px; color:white;" id="hint_button" class="ui" onclick="hint()" hidden>Hint</button>
+        <!--button style="top:90%; border:0px solid black; background-color: transparent; font-size:50px; color:white;" id="hint_button" class="ui" onclick="hint()" hidden>Hint</button-->
         <p style="right:0; padding: 30px; border:0px solid black; color: brown; font-size:30px; background-color: transparent;" id="acorn_count" class="ui" hidden>0</p>
         <p style="right:0; padding: 30px; border:0px solid black; color: yellow; font-size:30px; background-color: transparent; padding-top: 0%;" id="golden_acorn_count" class="ui" hidden>0</p>
         <div style="right:2%; bottom:2%; border:1px solid black; background-color: green; width:50%; height:1%" class="ui" id="health_bar" hidden></div>
