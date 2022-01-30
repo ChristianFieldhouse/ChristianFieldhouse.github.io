@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 		<title>Nutty's nutty adventure</title>
 		<style>
 			body {
@@ -27,9 +28,23 @@
               vertical-align: middle;
               position: absolute;
             }
+            
+            .no_selection {
+                -webkit-touch-callout:none;
+                -webkit-user-select:none;
+                -khtml-user-select:none;
+                -moz-user-select:none;
+                -ms-user-select:none;
+                user-select:none;
+                -webkit-tap-highlight-color:rgba(0,0,0,0);
+            }
+            
+            .arrows {
+                position: absolute;
+            }
 		</style>
 	</head>
-	<body>
+	<body class="no_selection">
 		<!--script src="node_modules/three/build/three.js"></script-->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.js"></script>
 		<script src="https://unpkg.com/three@0.127.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -61,8 +76,8 @@
             var gold_multiplyer = 10;
         </script>
         <script src="js/mysrc.js" type="module"></script>
-        <button style="top:0; border:0px solid black; background-color: transparent;" id="sound_button" class="ui" onclick="mute()" hidden><img src="images/music_on.png"></button>
         <!--button style="top:90%; border:0px solid black; background-color: transparent; font-size:50px; color:white;" id="hint_button" class="ui" onclick="hint()" hidden>Hint</button-->
+        <p style="top:90%; border:0px solid black; background-color: transparent; font-size:7px; color:white;" id="debug_p" class="ui"></p>
         <p style="right:0; padding: 30px; border:0px solid black; color: brown; font-size:30px; background-color: transparent;" id="acorn_count" class="ui" hidden>0</p>
         <p style="right:0; padding: 30px; border:0px solid black; color: yellow; font-size:30px; background-color: transparent; padding-top: 0%;" id="golden_acorn_count" class="ui" hidden>0</p>
         <div style="right:2%; bottom:2%; border:1px solid black; background-color: green; width:50%; height:1%" class="ui" id="health_bar" hidden></div>
@@ -70,6 +85,29 @@
         <img src="images/loading_screen.svg" height="100%" width="100%" class="title_screen" id="loading_screen" style="background-color: transparent;">
         <img src="images/title_screen.svg" height="100%" width="100%" class="title_screen" id="title_screen" style="background-color: transparent;" hidden>
         <img src="images/win_screen.svg" height="100%" width="100%" class="title_screen" id="win_screen" style="background-color: transparent;" hidden>
+        <div syle="right:5%; height:100%; width:20%;" id="scoreboard" class="ui">
+            <p id="scoreboard_text" style="color: white; font-size:30px; background-color: transparent; padding-top: 80%;">
+            
+            </p>
+        </div>
+        <div class="arrows" style="
+            right:0; bottom:0;
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+            border-bottom: 100px solid black;
+            border-top: 100px solid black;
+            opacity: 0.2;
+        " id="move_arrows">
+        </div>
+        <div class="arrows" style="
+            left:0; bottom:0;
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+            border-bottom: 100px solid black;
+            border-top: 100px solid black;
+            opacity: 0.2;
+        " id="cam_arrows">
+        </div>
         <div style="width:100%; height:100%; position:absolute; text-align:center;" hidden id="score_div">
             <div class="ui" style= "top: 70%; left: 45%">
                 <p id="score_paragraph">hello hello hello</p>
@@ -77,14 +115,23 @@
                 <button onclick="submit_score()">Submit Score</button>
             </div>
         </div>
-        <div syle="right:5%; height:100%; width:20%;" id="scoreboard" class="ui">
-            <p id="scoreboard_text" style="color: white; font-size:30px; background-color: transparent; padding-top: 80%;">
-            
-            </p>
-        </div>
-        
+        <button style="top:0; border:0px solid black; background-color: transparent;" id="sound_button" class="ui" onclick="mute()" hidden><img src="images/music_on.png"></button>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
         <script>
+            function reset_touch_feedback(){
+                document.getElementById("move_arrows").style.borderLeft = window.innerWidth/4 + "px solid transparent";
+                document.getElementById("move_arrows").style.borderRight = window.innerWidth/4 + "px solid transparent";
+                document.getElementById("move_arrows").style.borderTop = window.innerHeight/4 + "px solid transparent";
+                document.getElementById("move_arrows").style.borderBottom = window.innerHeight/4 + "px solid transparent";
+                
+                document.getElementById("cam_arrows").style.borderLeft = window.innerWidth/4 + "px solid transparent";
+                document.getElementById("cam_arrows").style.borderRight = window.innerWidth/4 + "px solid transparent";
+                document.getElementById("cam_arrows").style.borderTop = window.innerHeight/4 + "px solid transparent";
+                document.getElementById("cam_arrows").style.borderBottom = window.innerHeight/4 + "px solid transparent";
+            }
+            reset_touch_feedback();
+
+            console.log("sizes right??", window.innerWidth / 4);
             function fill_scoreboard(e) {
                 var s = "";
                 for (var i = 0; i < e.length; ++i){
@@ -98,7 +145,7 @@
                     parseInt(document.getElementById("acorn_count").innerHTML) + 
                     parseInt(document.getElementById("golden_acorn_count").innerHTML) * gold_multiplyer
                 );
-                const url_base = "https://script.google.com/macros/s/AKfycbzBR5szqeZhBFi8nYUkribLnv4XCFMIX_q3DfANMeuL7b7p8em5f2dvy9nLl5kSUfeB/exec";
+                const url_base = "https://script.google.com/macros/s/AKfycbx1-VkLnZiZqWFM7Tb7VcsNTZpRSH7v_Tfv0ZAFOWNRdTwXE9TKXKjWSc1Vz7LPwubg/exec";
                 var url = url_base + "?user=" + name + "&score=" + score +"&callback=fill_scoreboard";
 
                 // Make an AJAX call to Google Script

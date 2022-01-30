@@ -754,6 +754,7 @@ function show_winscreen(){
     document.getElementById('score_div').hidden = false;
     document.getElementById('score_paragraph').innerHTML = "You scored " + state["score"] + "!";
     stay_still();
+	aw_nuts.play();
 }
 
 var frame_no = 0;
@@ -780,6 +781,10 @@ const animate = function () {
 	}
 	if (key_states["right"]){
 	    right();
+	}
+
+	if (Math.random() < 1/1000){
+		squeaks.play();
 	}
 	
 	frame_no++;
@@ -949,7 +954,7 @@ const animate = function () {
                 golden_acorns[i].visible = false;
                 state["score"] += 10;
                 state["frames_left"] += acorn_time * 10;
-                play_munch();
+                wahoo.play();
             }
         }
 
@@ -1011,7 +1016,7 @@ const animate = function () {
 	    set_walking_pose(frame_no * 0.2);
 	    squirrel_dir.lerp(target_direction, 0.1).normalize();
 		squirrel_left = squirrel_up.clone().cross(squirrel_dir.clone()).normalize().negate();
-		if (state["time"] > 30){
+		if (state["time"] > 5){
 		    stay_still();
 		}
 		
@@ -1181,9 +1186,14 @@ const animate = function () {
 };
 
 var music_playing = false;
-var audio = new Audio('sounds/squirrel song.mp3');
-var munch_audio_katie = new Audio('sounds/munch_katie.mp3');
-var munch_audio_christian = new Audio('sounds/munch_christian.mp3');
+const audio = new Audio('sounds/squirrel song.mp3');
+const munch_audio_katie = new Audio('sounds/munch_katie.mp3');
+const munch_audio_christian = new Audio('sounds/munch_christian.mp3');
+const wahoo = new Audio('sounds/wahoo.mp3');
+const aw_nuts = new Audio('sounds/aw_nuts.mp3');
+const squeaks = new Audio('sounds/squeaks.mp3');
+const jump_katie = new Audio('sounds/jump_katie.mp3');
+const jump_christian = new Audio('sounds/jump_christian.mp3');
 var local_sounds = [
     [new THREE.Vector3(-64, 0, 65), 15, new Audio('sounds/ufo_sound.mp3')],
     [new THREE.Vector3(15, 0, -59), 5, new Audio('sounds/fire_sound.mp3')],
@@ -1197,9 +1207,17 @@ function pause_music(){
 }
 function play_munch(){
     if (Math.random() < 0.5){
-        munch_audio_christian.play();
+        munch_audio_christian.cloneNode().play();
     }else{
-        munch_audio_katie.play();
+        munch_audio_katie.cloneNode().play();
+    }
+}
+
+function play_jump(){
+    if (Math.random() < 0.5){
+        jump_christian.play();
+    }else{
+        jump_katie.play();
     }
 }
 
@@ -1254,6 +1272,17 @@ function back(){
 	}
 }
 
+function maybe_jump(){
+	if (gripping()){
+		play_jump();
+		state["action"] = "jumping";
+		state["time"] = 0;
+		state["velocity"] = squirrel_dir.clone().add(
+			squirrel_up.multiplyScalar(0.5)
+		).multiplyScalar(0.02);
+	}
+}
+
 var key_states = {
     "foreward": false,
     "back": false,
@@ -1263,6 +1292,20 @@ var key_states = {
     "cam_right": false,
     "cam_up": false,
     "cam_down": false,
+}
+
+function reset_move_keys(){
+	key_states["foreward"] = false;
+	key_states["left"] = false;
+	key_states["right"] = false;
+	key_states["back"] = false;
+}
+
+function reset_cam_keys(){
+	key_states["cam_up"] = false;
+	key_states["cam_left"] = false;
+	key_states["cam_right"] = false;
+	key_states["cam_down"] = false;
 }
 
 function input_react(){
@@ -1296,9 +1339,7 @@ document.onkeydown = function(e) {
             key_states["right"] = true;
 		break;
 		case 38: // foreward
-		    console.log("foreward!!");
             key_states["foreward"] = true;
-            console.log(key_states);
 		break;
 		case 39: // left
             key_states["left"] = true;
@@ -1307,28 +1348,16 @@ document.onkeydown = function(e) {
 		    key_states["back"] = true;
 		break;
 		case 32: //  space initiates jump
-		  if (gripping()){
-			  state["action"] = "jumping";
-			  state["time"] = 0;
-			  state["velocity"] = squirrel_dir.clone().add(
-				  squirrel_up.multiplyScalar(0.5)
-			  ).multiplyScalar(0.02);
-		  }
+			maybe_jump();
 		break;
-		case "U".charCodeAt(0): //  u makes squirrel go up
-		squirrel.position.y = squirrel.position.y + 1;
-		break;
+		//case "U".charCodeAt(0): //  u makes squirrel go up
+		//	squirrel.position.y = squirrel.position.y + 1;
+		//break;
 		case "D".charCodeAt(0): // a key, camera left
 		    key_states["cam_left"] = true;
 		break;
 		case "A".charCodeAt(0):
 			key_states["cam_right"] = true;
-		break;
-		case "C".charCodeAt(0):
-		  camera.position.add(new THREE.Vector3(cameps, 0, 0));
-		break;
-		case "Z".charCodeAt(0):
-		  camera.position.add(new THREE.Vector3(-cameps, 0, 0));
 		break;
 		case "S".charCodeAt(0): // s key, camera down
 			key_states["cam_down"] = true;
@@ -1336,26 +1365,32 @@ document.onkeydown = function(e) {
 		case "W".charCodeAt(0): // w key, camera up
 			key_states["cam_up"] = true;
 		break;
-		case "E".charCodeAt(0): // e key, up
-		  camera.position.add(new THREE.Vector3(0, cameps, 0));
-		break;
-		case "Q".charCodeAt(0): // q key, camera down
-		  camera.position.sub(new THREE.Vector3(0, cameps, 0));
-		break;
-		case "R".charCodeAt(0): // e key, up
-		  camera.rotation.x += roteps;
-		break;
-		case "F".charCodeAt(0): // q key, camera down
-		  camera.rotation.x -= roteps;
-		break;
-		case "L".charCodeAt(0): // q key, camera down
-			if (state["action"] == "walking"){
-				state["action"] = "sitting";
-			}
-			else if (state["action"] == "sitting"){
-				state["action"] = "walking";
-			}
-		break;
+		//case "C".charCodeAt(0):
+		//  camera.position.add(new THREE.Vector3(cameps, 0, 0));
+		//break;
+		//case "Z".charCodeAt(0):
+		//  camera.position.add(new THREE.Vector3(-cameps, 0, 0));
+		//break;
+		//case "E".charCodeAt(0): // e key, up
+		//  camera.position.add(new THREE.Vector3(0, cameps, 0));
+		//break;
+		//case "Q".charCodeAt(0): // q key, camera down
+		//  camera.position.sub(new THREE.Vector3(0, cameps, 0));
+		//break;
+		//case "R".charCodeAt(0): // e key, up
+		//  camera.rotation.x += roteps;
+		//break;
+		//case "F".charCodeAt(0): // q key, camera down
+		//  camera.rotation.x -= roteps;
+		//break;
+		//case "L".charCodeAt(0): // q key, camera down
+		//	if (state["action"] == "walking"){
+		//		state["action"] = "sitting";
+		//	}
+		//	else if (state["action"] == "sitting"){
+		//		state["action"] = "walking";
+		//	}
+		//break;
     }
     var cam_direction = new THREE.Vector3(
 		squirrel.position.x - camera.position.x,
@@ -1400,21 +1435,85 @@ window.onkeyup = function(e) {
     }
 }
 
+function feel(touch, direction=true){
+	//document.getElementById("debug_p").innerHTML = JSON.stringify(key_states);
+	//document.getElementById("debug_p").innerHTML = direction;
+    if (touch.clientY > window.innerHeight/2){
+		if (touch.clientX > window.innerWidth/2){
+			var x = touch.clientX - window.innerWidth * 3/4;
+			var y = touch.clientY - window.innerHeight * 3/4;
+			reset_move_keys();
+			if (Math.abs(x) > Math.abs(y)){
+				if (x > 0){
+					key_states["left"] = direction;
+					document.getElementById("move_arrows").style.borderRight = window.innerWidth/4 + "px solid black";
+				}else{
+					key_states["right"] = direction;
+					document.getElementById("move_arrows").style.borderLeft = window.innerWidth/4 + "px solid black";
+				}
+			}else{
+				if (y > 0){
+					key_states["back"] = direction;
+					document.getElementById("move_arrows").style.borderBottom = window.innerHeight/4 + "px solid black";
+				}else{
+					key_states["foreward"] = direction;
+					document.getElementById("move_arrows").style.borderTop = window.innerHeight/4 + "px solid black";
+				}
+			}
+		}
+		else{
+			reset_cam_keys();
+			var x = touch.clientX - window.innerWidth/4;
+			var y = touch.clientY - window.innerHeight * 3/4;
+			if (Math.abs(x) > Math.abs(y)){
+				if (x > 0){
+					key_states["cam_left"] = direction;
+					document.getElementById("cam_arrows").style.borderRight = window.innerWidth/4 + "px solid black";
+				}else{
+					key_states["cam_right"] = direction;
+					document.getElementById("cam_arrows").style.borderLeft = window.innerWidth/4 + "px solid black";
+				}
+			}else{
+				if (y > 0){
+					key_states["cam_down"] = direction;
+					document.getElementById("cam_arrows").style.borderBottom = window.innerHeight/4 + "px solid black";
+				}else{
+					key_states["cam_up"] = direction;
+					document.getElementById("cam_arrows").style.borderTop = window.innerHeight/4 + "px solid black";
+				}
+			}
+		}
+    }else{
+		maybe_jump();
+	}
+}
+
 document.ontouchstart = function(e) {
     input_react();
-    if (e.touches[0].clientX > window.innerWidth/2){
-        left();
-    }
-    else{
-        right();
-    }
-    if (e.touches[0].clientY < 3*window.innerHeight/4){
-        foreward();
-    }
-    else{
-        back();
-    }
+	for (var i = 0; i < e.touches.length; ++i){
+		feel(e.touches[i], true);
+	}
 }
+document.ontouchend = function(e) {
+	//document.getElementById("debug_p").innerHTML = e.touches.length;
+	key_states = {
+		"foreward": false,
+		"back": false,
+		"left":false,
+		"right": false,
+		"cam_left": false,
+		"cam_right": false,
+		"cam_up": false,
+		"cam_down": false,
+	}
+	reset_touch_feedback();
+}
+document.ontouchmove = function(e) {
+	for (var i = 0; i < e.touches.length; ++i){
+		feel(e.touches[i], true);
+	}
+}
+
 
 function onDocumentMouseWheel( event ) {
 
@@ -1447,7 +1546,6 @@ function onWindowResize(){
 
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
-
 
 document.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
 document.addEventListener( 'click', onDocumentClick, false );
