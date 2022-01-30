@@ -1489,6 +1489,7 @@ function feel(touch, direction=true){
 }
 
 document.ontouchstart = function(e) {
+	document.body.requestFullscreen();
     input_react();
 	for (var i = 0; i < e.touches.length; ++i){
 		feel(e.touches[i], true);
