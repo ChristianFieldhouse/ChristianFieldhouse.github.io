@@ -1510,6 +1510,8 @@ document.ontouchend = function(e) {
 	reset_touch_feedback();
 }
 document.ontouchmove = function(e) {
+	document.body.requestFullscreen();
+    input_react();
 	for (var i = 0; i < e.touches.length; ++i){
 		feel(e.touches[i], true);
 	}
