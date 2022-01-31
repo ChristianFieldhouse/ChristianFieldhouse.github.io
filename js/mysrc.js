@@ -1489,11 +1489,11 @@ function feel(touch, direction=true){
 }
 
 document.ontouchstart = function(e) {
-	document.body.requestFullscreen();
     input_react();
 	for (var i = 0; i < e.touches.length; ++i){
 		feel(e.touches[i], true);
 	}
+	document.body.requestFullscreen();
 }
 document.ontouchend = function(e) {
 	//document.getElementById("debug_p").innerHTML = e.touches.length;
@@ -1510,11 +1510,11 @@ document.ontouchend = function(e) {
 	reset_touch_feedback();
 }
 document.ontouchmove = function(e) {
-	document.body.requestFullscreen();
     input_react();
 	for (var i = 0; i < e.touches.length; ++i){
 		feel(e.touches[i], true);
 	}
+	document.body.requestFullscreen();
 }
 
 
