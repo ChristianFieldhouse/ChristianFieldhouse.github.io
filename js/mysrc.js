@@ -933,18 +933,6 @@ const animate = function () {
             }
         }
     }
-    if (acorn_count < acorns.length/10){
-        hint_number = 3;
-        document.getElementById("hint_button").style.color = "red";
-    }
-    else if (acorn_count < acorns.length/5){
-        hint_number = 2;
-        document.getElementById("hint_button").style.color = "orange";
-    }
-    else if (acorn_count < acorns.length/2){
-        hint_number = 1;
-        document.getElementById("hint_button").style.color = "yellow";
-    }
 
     var golden_count = 0;
     for (var i = 0; i < golden_acorns.length; ++i){
