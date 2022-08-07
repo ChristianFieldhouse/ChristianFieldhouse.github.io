@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="c" width="800" height="500" style="border:1px solid #000000;"></canvas>
+<p id="p1"></p>
+<p id="p2"></p>
+<p id="p3"></p>
+<p id="p4"></p>
+<p id="p5"></p>
+<p id="p6"></p>
+<script>
+
+var ctx =  c.getContext("2d");
+var time2= setInterval(step,0); // game frame rate
+var size = 1
+var coords = [[size*108.395,size*53.77355,0],[size*108.395,-size*53.77355,0],[-size*200,0,0]];
+//[[size*108.395,size*53.77355,0],[size*108.395,-size*53.77355,0],[-size*200,0,0]];
+// 1 plane symmetric [[100,0,0],[-50,86.6025,0],[-50,-86.6025,0]];
+var dy = 0.3118;
+var dx = 1;
+var scale = 0.9;
+
+var crashed = false;
+var vela = [[dx*scale,dy*scale,0],[-dx*scale,dy*scale,0],[0,-2*dy*scale,0]];
+//[[dx*scale,dy*scale,0],[-dx*scale,dy*scale,0],[0,-2*dy*scale,0]];
+// [[0,0.5,0],[-0.866025*0.5,-0.5*0.5,0],[0.866025*0.5,-0.5*0.5,0]];
+var r2;
+/////////////////////////////////////////////////////////// Functions //////////////////////////////////////////////////////////
+var zoom = 1/size;
+
+function step(){
+
+	move();
+	print();
+	if ((crashed)||(false)){
+		scale += (Math.random()-0.5)*(scale/10);
+		vela = [[dx*scale,dy*scale,0],[-dx*scale,dy*scale,0],[0,-2*dy*scale,0]];
+		coords = [[size*108.395,size*53.77355,0],[size*108.395,-size*53.77355,0],[-size*200,0,0]];
+		crashed = false;
+	}
+}
+
+
+function move() { // change size and breed
+	//0 to 1:
+	r2 = ((coords[1][0] -coords[0][0])*(coords[1][0] -coords[0][0]) +(coords[1][1] -coords[0][1])*(coords[1][1] -coords[0][1])+(coords[1][2] -coords[0][2])*(coords[1][2] -coords[0][2])) + 0.1;
+	
+	if (r2 < 100){
+		crashed = true;
+	}
+	
+	vela[0][0]+= (coords[1][0] -coords[0][0])/r2;
+	vela[0][1]+= (coords[1][1] -coords[0][1])/r2;
+	vela[0][2]+= (coords[1][2] -coords[0][2])/r2;
+	
+	vela[1][0]-= (coords[1][0] -coords[0][0])/r2;
+	vela[1][1]-= (coords[1][1] -coords[0][1])/r2;
+	vela[1][2]-= (coords[1][2] -coords[0][2])/r2;
+	
+	// 0 to 2
+	r2 = ((coords[2][0] -coords[0][0])*(coords[2][0] -coords[0][0]) +(coords[2][1] -coords[0][1])*(coords[2][1] -coords[0][1])+(coords[2][2] -coords[0][2])*(coords[2][2] -coords[0][2])) + 0.1;
+	
+	if (r2 < 100){
+		crashed = true;
+	}
+	
+	
+	vela[0][0]+= (coords[2][0] -coords[0][0])/r2;
+	vela[0][1]+= (coords[2][1] -coords[0][1])/r2;
+	vela[0][2]+= (coords[2][2] -coords[0][2])/r2;
+	
+	vela[2][0]-= (coords[2][0] -coords[0][0])/r2;
+	vela[2][1]-= (coords[2][1] -coords[0][1])/r2;
+	vela[2][2]-= (coords[2][2] -coords[0][2])/r2;
+	
+	// 1 to 2
+	r2 = ((coords[2][0] -coords[1][0])*(coords[2][0] -coords[1][0]) +(coords[2][1] -coords[1][1])*(coords[2][1] -coords[1][1])+(coords[2][2] -coords[1][2])*(coords[2][2] -coords[1][2]))+ 0.1;
+	
+	if (r2 < 100){
+		crashed = true;
+	}
+	
+	vela[1][0]+= (coords[2][0] -coords[1][0])/r2;
+	vela[1][1]+= (coords[2][1] -coords[1][1])/r2;
+	vela[1][2]+= (coords[2][2] -coords[1][2])/r2;
+	
+	vela[2][0]-= (coords[2][0] -coords[1][0])/r2;
+	vela[2][1]-= (coords[2][1] -coords[1][1])/r2;
+	vela[2][2]-= (coords[2][2] -coords[1][2])/r2;
+	
+	for(var i = 0; i < 3 ; i++){
+		for(var j = 0; j < 3 ; j++){
+			coords[i][j] += vela[i][j];
+		}
+	}
+		
+}	
+
+
+function print(){ 	// prints all objects (tanks, blocks, shells...) to canvas
+	
+	ctx.fillStyle= "#ffffff";
+	ctx.fillRect(0,0,800,500); // background
+	
+	ctx.fillStyle= "#000000";
+	ctx.fillRect(400+zoom*coords[0][0],250+zoom*coords[0][1],(5 + 0.01*coords[0][2]),(5 + 0.01*coords[0][2])); // background
+	ctx.fillRect(400+zoom*coords[1][0],250+zoom*coords[1][1],(5 + 0.01*coords[1][2]),(5 + 0.01*coords[1][2]));
+	ctx.fillRect(400+zoom*coords[2][0],250+zoom*coords[2][1],(5 + 0.01*coords[2][2]),(5 + 0.01*coords[2][2]));
+	document.getElementById("p1").innerHTML = coords[0][0];
+} 
+
+</script>
+</body>
+</html> 

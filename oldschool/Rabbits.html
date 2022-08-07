@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="c" width="800" height="500" style="border:1px solid #000000;"></canvas>
+<p id="p1"></p>
+<p id="p2"></p>
+<p id="p3"></p>
+<p id="p4"></p>
+<p id="p5"></p>
+<p id="p6"></p>
+<script>
+
+var P = Math.PI;
+////////////////////////////////////////////////////// Audiovisual fles ////////////////////////////////////////////////////////
+
+var ctx =  c.getContext("2d");
+ctx.font = "20px Arial";
+
+//////////////////////////////////////////////////////////  Player values  ////////////////////////////////////////////////////////
+
+
+var xVel = 3;
+
+//var score1 = 0;
+
+
+var food = [];
+
+var d1 = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[450,200,0],0];
+var d2 = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[450,200,0],0];
+var d3 = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[450,200,0],0];
+
+alive1 = true;
+alive2 = true;
+alive3 = true;
+
+for(var i = 0; i<10; i++){
+	for(var j = 0; j<4; j++){
+		d1[i][j] = Math.random()-0.5;
+	}
+	d1[10][2] = 2*Math.PI*(Math.random()-0.5);
+}
+
+for(var i = 0; i<10; i++){
+	for(var j = 0; j<4; j++){
+		d2[i][j] = Math.random()-0.5;
+		
+	}
+	d2[10][2] = 2*Math.PI*(Math.random()-0.5);
+}
+
+for(var i = 0; i<10; i++){
+	for(var j = 0; j<4; j++){
+		d3[i][j] = Math.random()-0.5;
+	}
+	d3[10][2] = 2*Math.PI*(Math.random()-0.5);
+}
+
+
+
+///////////////////////////////////////////////////////////  Draw Game  //////////////////////////////////////////////////////////
+
+/*there are four ways to add obstacles to the map:
+
+	1. simply type "blocks.push([x,y]);" to add a block
+	2. type "draw(x1,y1,x2,y2);" to draw a line from (x1,y1) to (x2,y2)
+	3. "scatter(x);" will add a scatter from x
+	4. "hoop(x,y)" will add a hoop at that coordinate.*/
+
+	//scatter(450);
+	scatter(100);
+	scatter(0);
+	scatter(500);
+	
+	//scatter(600);
+	
+	var F1 = food.slice();
+	
+	
+//draw(100,450,900,460);
+//blocks.push([50,50]);
+//for(var i = 1; i < 10; i++){
+	
+	//hoop(500*i,Math.random()*350 + 100);
+	//scatter(300*i);
+	
+//}
+
+///////////////////////////////////////////////////////////// Time Keeping  ////////////////////////////////////////////////////
+
+var gen = 0;
+var time2= setInterval(trial,10); // game frame rate
+var time= setInterval(cull,7000);
+
+/////////////////////////////////////////////////////////// Functions //////////////////////////////////////////////////////////
+
+
+
+function cull(){// kill rabbit with least food
+	gen++;
+	
+	//document.getElementById("p4").innerHTML = d1[11] + ":" + d2[11];
+	if (gen == 3600){
+		clearInterval(time);
+		 time= setInterval(cull,10000);
+	}
+	print();
+	if (((d2[10][0]>12000)||(d2[10][0]<-2000))||((d2[10][1]>6000)||(d2[10][1]<-1000))){
+		
+		alive2 = false;
+	}
+	
+	else if (((d1[10][0]>12000)||(d1[10][0]<-2000))||((d1[10][1]>6000)||(d1[10][1]<-1000))){
+		
+		alive1 = false;
+	}
+
+	else if ((d2[11]>d1[11])){
+		
+		alive1 = false;
+	}
+		
+	else{
+
+		alive2 = false;
+		
+	}
+
+}
+
+function trial(){
+	document.getElementById("p1").innerHTML = d1[11];
+	document.getElementById("p2").innerHTML = d2[11];
+	//printNet(d1);
+	//printWeights();
+	go();
+	
+	checkLoc(d1);
+	checkLoc(d2);
+	
+	if (((alive1&&alive2)) != true){
+	for(var i = 0; i<1; i++){
+		breed();
+	}
+		reset();
+	}
+}
+
+function checkLoc(d){
+	if (((d[10][0] > 750)||(d[10][0]< 0))||((d[10][1]>450)||(d[10][1] < 0))){
+		d[11] = (d[11]+1)/2;
+		d[10] = [440,200,2*Math.PI*(Math.random()-0.5)];
+	}
+}
+
+function reset(){
+	d1[10] = [460,200,0];
+	d2[10] = [450,200,0];
+	//d3[10] = [440,200,2*Math.PI*(Math.random()-0.5)];
+	//d1[11] = 0;
+	d2[11] = 0;
+	d1[11] = 0;
+
+	//food = F1.slice();
+	//scatter(450);
+	
+	alive1 = true;
+	alive2 = true;
+	//alive3 = true;
+}
+
+function breed(){
+	var s = 0;
+	var t = 0;
+	var w = 0;
+	if ((d1[11] == d2[11])&&(d1[11] == 0)){
+		w = 2;
+	}else{
+		w = 1;
+	}
+	if (alive2){
+		for(var i = 0; i<10;i++){
+			d1[i] = d2[i].slice();
+		}
+		
+		for(var j = 0 ; j<10; j++){
+			s = Math.round(Math.random()*9);
+			t = Math.round(Math.random()*4);
+			d1[s][t] += (Math.random() -0.5)*(1/(d1[11]+1))*w;
+		}
+		document.getElementById("p5").innerHTML = "Brown CHANGED BY "+(1/(d1[11]+1))*w;
+	}
+	else{
+		for(var i = 0; i<10;i++){
+			d2[i] = d1[i].slice();
+		}
+		for(var j = 0 ; j<10; j++){
+			s = Math.round(Math.random()*9);
+			t = Math.round(Math.random()*4);
+			d2[s][t] += (Math.random() -0.5)*(1/(d2[11]+1))*w;
+		}
+		document.getElementById("p5").innerHTML = "Pink CHANGED BY "+(1/(d2[11]+1))*w;
+	}
+
+}
+
+function go() { // central function, is carried out at frame rate frequency
+	//document.getElementById("p2").innerHTML = d1[11];
+	//document.getElementById("p3").innerHTML = d2[11];
+	
+	
+
+	move(d1);
+	move(d2);
+	//move(d3);
+	if (gen >= 0){
+		print();
+	}
+	
+}	
+
+function print(){ 	// prints all objects (tanks, blocks, shells...) to canvas
+	ctx.fillStyle= "#1DBD2D";
+	ctx.fillRect(0,0,800,500); // background
+
+
+	// vision
+	
+
+	fod = (Math.round(255 - block1(d2,P/6))).toString(16); 
+	ctx.fillStyle="#"+fod+""+fod+""+fod;
+	ctx.fillRect(250,450,50,50);	
+	fod = (Math.round(255 - block1(d2,-P/6))).toString(16); 
+	ctx.fillStyle="#"+fod+""+fod+""+fod;
+	ctx.fillRect(300,450,50,50);	
+	fod = (Math.round(255 - food1(d2,0))).toString(16); 
+	ctx.fillStyle="#"+fod+""+fod+""+fod;
+	ctx.fillRect(350,450,50,50);	
+	fod = (Math.round(255 - food1(d2,P/4))).toString(16); 
+	ctx.fillStyle="#"+fod+""+fod+""+fod;
+	ctx.fillRect(400,450,50,50);	
+	//ctx.fillStyle="#aaaaaa";
+	//ctx.fillRect(d3[10][0],d3[10][1],50,50);
+	
+	ctx.fillStyle="#985513";
+	ctx.fillRect(d1[10][0],d1[10][1],50,50);
+	ctx.fillStyle="#981362";
+	ctx.fillRect(d2[10][0],d2[10][1],50,50);
+	ctx.fillStyle="#000000";
+	ctx.fillRect(d1[10][0]+20*(1+Math.cos(d1[10][2])),d1[10][1]+20*(1+Math.sin(d1[10][2])),10,10);
+	ctx.fillRect(d2[10][0]+20*(1+Math.cos(d2[10][2])),d2[10][1]+20*(1+Math.sin(d2[10][2])),10,10);	
+	
+	
+	ctx.fillStyle="#1D4C17";
+	for(var i = 0; i<food.length; i++){
+		ctx.fillRect(food[i][0],food[i][1],50,50);
+	}
+} 
+
+function move(d){
+
+	if (turnLeft(d)){
+		d[10][2]+=0.05;
+	}else{
+		d[10][2]-=0.05
+	}
+	
+	if(d[10][2] > P){
+		d[10][2] -= 2*P;
+	} if(d[10][2] < -P){
+		d[10][2] += 2*P;
+	}
+		
+	d[10][0] += xVel*Math.cos(d[10][2]);
+	d[10][1] += xVel*Math.sin(d[10][2]);
+	
+	for(var i = 0; i<food.length; i++){
+		if ((Math.abs(d[10][1] -food[i][1])<50)&&(Math.abs(d[10][0] -food[i][0])<50)){
+			food.splice(i,1);
+			d[11]++;
+			food.push([750*Math.random(),400*Math.random()])
+		}
+	}
+	
+}
+
+function free(d){	
+	return true;
+}
+
+
+function n(d1,a){ // first neurones
+	if (block1(d1,P/6)*d1[a][0] + food1(d1,0)*d1[a][1]+ food1(d1,-P/4)*d1[a][2] + block1(d1,-P/6)*d1[a][3] + d1[a][4] < 0){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+function m(d1,a){ // second neurones a 0 -4
+	
+	if (n(d1,0)*d1[a+4][0] + n(d1,1)*d1[a+4][1]+ n(d1,2)*d1[a+4][2] + n(d1,3)*d1[a+4][3] + d1[a+4][4] < 0){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+function turnLeft(d1){
+
+	if (m(d1,0)*d1[9][0] + m(d1,1)*d1[9][1]+ m(d1,2)*d1[9][2] + m(d1,3)*d1[9][3] + d1[9][4] < 0){
+		return true;
+	}else{
+		return false;
+	}
+}
+
+
+function food1(d,theta){// (theta,direction): (0,left),(45,far left),(-45,right),(-90,alt right)
+
+
+	var fo = 0;
+	theta += d[10][2];
+	if(theta > P){
+		theta -= 2*P;
+	} if(theta < -P){
+		theta += 2*P;
+	}
+	
+	for(var i = 0; i<food.length; i++){
+		if (inRange(food[i][0]-d[10][0],food[i][1]-d[10][1],theta)){
+			fo += sight(food[i],d[10][0],d[10][1]);
+		}
+	}
+	return fo;
+}
+
+function block1(d,theta){// (theta,direction): (0,left),(45,far left),(-45,right),(-90,alt right)
+	
+	theta += d[10][2];
+	if(theta > P){
+		theta -= 2*P;
+	} if(theta < -P){
+		theta += 2*P;
+	}
+	
+	if ((theta > 0)&&(theta < P/2)){
+		return 10000/Math.min((750 - d[10][0])/Math.cos(theta),(450 - d[10][1])/Math.sin(theta));
+	}if((theta > P/2)&&(theta < P)){
+		return 10000/Math.min((-d[10][0])/Math.cos(theta),(450 - d[10][1])/Math.sin(theta));
+	}if((theta > -P/2)&&(theta < 0)){
+		return 10000/Math.min((750 - d[10][0])/Math.cos(theta),(-d[10][1])/Math.sin(theta));
+	}if((theta > -P)&&(theta < -P/2)){
+		return 10000/Math.min((-d[10][0])/Math.cos(theta),(-d[10][1])/Math.sin(theta));
+	}
+	return 100;
+
+}
+
+function inRange(x,y,t1){
+	if ((t1 > -P/2)&&(t1 < P/4)){
+		if (x>0){
+			if((y > (x)*Math.tan(t1))&&(y < (x)*Math.tan(t1+P/4))){
+				return true;
+			}
+		}
+	}else if ((t1 > P/4)&&(t1 < P/2)){
+		if (y>0){
+			if (x > 0){
+				if(y > (x)*Math.tan(t1)){
+					return true;
+				}	
+			}
+			else if (x < 0){
+				if(y > (x)*Math.tan(t1+P/4)){
+					return true;
+				}	
+			}
+
+		}
+	}else if ((t1 > P/2)||(t1 < -3*P/4)){
+		if (x<0){
+			if((y < (x)*Math.tan(t1))&&(y > (x)*Math.tan(t1+P/4))){
+				return true;
+			}
+		}
+	}else if ((t1 > -3*P/4)&&(t1 < -P/2)){
+		if (y<0){
+			if (x < 0){
+				if(y < (x)*Math.tan(t1)){
+					return true;
+				}	
+			}
+			else if (x > 0){
+				if(y < (x)*Math.tan(t1+P/4)){
+					return true;
+				}	
+			}
+
+		}
+	}
+	return false;
+	
+}
+
+function sight(a,x,y){// 1/distance squared , how much (x,y) can see a.
+	
+	return 1000000*Math.pow((a[0]-x)*(a[0]-x) + (a[1]-y)*(a[1]-y),-1);
+}
+
+function scatter(x1){
+	for(var i = 0; i< 5; i++){
+		food.push([Math.random()*200 + x1,Math.random()*450]);
+	}
+}
+
+function printNet(d){	
+	document.getElementById("p1").innerHTML = 1*turnLeft(d) + " :" + m(d,0) + " :" + n(d,0) + ":" + Math.round(food1(d,P/4)) ;
+	document.getElementById("p2").innerHTML = "...." + m(d,1) + " :" +n(d,1) + " :" + Math.round(food1(d,0));
+	document.getElementById("p3").innerHTML = "...." + m(d,2) + " :" +n(d,2) + " :" + Math.round(food1(d,-P/4));
+	document.getElementById("p4").innerHTML = "...." + m(d,3) + " :" +n(d,3) + " :" + Math.round(food1(d,-P/2));
+
+}
+
+function printWeights(){
+
+	document.getElementById("p5").innerHTML = d1;
+	document.getElementById("p6").innerHTML = d2;
+
+}
+
+</script>
+</body>
+</html> 

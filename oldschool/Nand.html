@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="c" width="800" height="500" style="border:1px solid #000000;"></canvas>
+Set Operation: &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp Rename:<br>
+Gate#: <input id="gate" type="number" > &nbsp &nbsp Gate: <input id="g" type="number" ><br>
+in1: <input id="in1" type="number" >&nbsp &nbsp &nbsp &nbsp &nbsp As: <input id="name" type="text" ><br>
+in2: <input id="in2" type="number" ><br>
+<button onclick="Set()">Go</button>&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <button onclick="Name()">Baptise</button><br>
+<button onclick="Spawn()">More Nandage</button><button onclick="t1()">S1</button><button onclick="t2()">S2</button><button onclick="t3()">S3</button><button onclick="t4()">S4</button><br>
+
+<p id="p1"></p>
+<p id="p2"></p>
+<p id="p3"></p>
+<p id="p4"></p>
+<p id="p5"></p>
+<p id="p6"></p>
+<script>
+
+////////////////////////////////////////////////////// Audiovisual fles ////////////////////////////////////////////////////////
+
+var ctx =  c.getContext("2d");
+ctx.font = "20px Arial";
+ctx.fillStyle= "#3399ff";
+ctx.fillRect(0,0,800,500);
+
+//////////////////////////////////////////////////////////  Player values  ////////////////////////////////////////////////////////
+
+//##[out,in,in,name]####---Switches-------------------------------##--NAND--->
+var NAND = [[0,1,1,"f"],[1,1,0,"s1"],[1,1,0,"s2"],[1,1,0,"s3"],[1,1,0,"s4"],[0,1,1,"n5"]];
+
+///////////////////////////////////////////////////////////  Draw Game  //////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////// Time Keeping  ////////////////////////////////////////////////////
+
+
+var time2= setInterval(go,30); // game frame rate
+
+
+/////////////////////////////////////////////////////////// Functions //////////////////////////////////////////////////////////
+function Spawn(){
+	NAND.push([1,0,0,"n"+NAND.length]);
+}
+
+function Set(){
+	NAND[document.getElementById("gate").value][1] = document.getElementById("in1").value;
+	NAND[document.getElementById("gate").value][2] = document.getElementById("in2").value;
+}
+
+function Name(){
+	NAND[document.getElementById("g").value][3] = document.getElementById("name").value;
+}
+
+function t1(){
+
+	if(NAND[1][0]){
+		document.getElementById("p1").innerHTML = NAND[1][0];
+		NAND[1][1] = 1;
+		NAND[1][2] = 1;
+		NAND[1][0] = 0;
+	}else{
+	
+		NAND[1][1] = 0;
+		NAND[1][2] = 0;
+		NAND[1][0] = 1;
+	}
+}
+function t2(){
+	if(NAND[2][0]){
+		NAND[2][1] = 1;
+		NAND[2][2] = 1;
+		NAND[2][0] = 0;
+	}else{
+		NAND[2][1] = 0;
+		NAND[2][2] = 0;
+		NAND[2][0] = 1;
+	}
+}
+function t3(){
+	if(NAND[3][0]){
+		NAND[3][1] = 1;
+		NAND[3][2] = 1;
+		NAND[3][0] = 0;
+	}else{
+		NAND[3][1] = 0;
+		NAND[3][2] = 0;
+		NAND[3][0] = 1;
+	}
+}
+function t4(){
+	if(NAND[4][0]){
+		NAND[4][1] = 1;
+		NAND[4][2] = 1;
+		NAND[4][0] = 0;
+	}else{
+		NAND[4][1] = 0;
+		NAND[4][2] = 0;
+		NAND[4][0] = 1;
+	}
+}
+
+
+function go() { // central function, is carried out at frame rate frequency
+	print();
+	
+	Compute();
+	
+}	
+
+function print(){ 	// prints all objects (tanks, blocks, shells...) to canvas
+	ctx.fillStyle= "#3399ff";
+	ctx.fillRect(0,0,800,500); // background
+
+	for(var i = 1; i<NAND.length; i++){
+		
+
+		if(NAND[i][0]){
+			ctx.fillStyle= "#996600";
+		}else{
+			ctx.fillStyle= "#800000";
+		}
+		ctx.fillRect(Math.floor(i/6)*80 + 10,(i%6)*80 +40,50,50);
+		
+		ctx.fillStyle= "#000000";
+		
+		ctx.fillText(NAND[i][3]+"("+i+")",Math.floor(i/6)*80 + 15,(i%6)*80 +30);
+		
+		if(i>4){
+			ctx.fillText(NAND[NAND[i][1]][3],Math.floor(i/6)*80 + 15,(i%6)*80 +60);
+			ctx.fillText(NAND[NAND[i][2]][3],Math.floor(i/6)*80 + 15,(i%6)*80 +80);		
+		}
+
+		
+	}
+} 
+
+function Compute(){
+
+	for(var i = 5; i<NAND.length; i++){
+		NAND[i][0] = !(NAND[NAND[i][1]][0]&&NAND[NAND[i][2]][0]);
+	}
+
+
+}
+
+</script>
+</body>
+</html> 
