@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1 id="header">Fetching IP</h1>
+
+<script>
+function httpGetAsync(theUrl, callback)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            callback(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.send(null);
+}
+
+function callback(text){
+    document.getElementById("header").innerHTML = "redirecting... (this won't work on local network)"
+    window.location.replace("http://" + text + ":80");
+}
+
+httpGetAsync("https://script.google.com/macros/s/AKfycbzZ5O4CTOgeA91lcZLRMgJD1Gmw3cRriTNNNTxTx-0Pv5IHvcxWwxm4geRvoU1FWecB/exec", callback)
+
+</script>
+
+</body>
+</html>
