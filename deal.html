@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deal or No Deal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Inter:wght@400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle, #1a202c 0%, #0d1117 100%); color: white; min-height: 100vh; overflow-x: hidden; }
+        .briefcase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; }
+        .briefcase { aspect-ratio: 4/3; perspective: 1000px; cursor: pointer; transition: transform 0.2s; }
+        .briefcase:hover:not(.eliminated):not(.selected) { transform: scale(1.05); }
+        .briefcase-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: all 0.4s ease; transform-style: preserve-3d; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border-radius: 8px; background: linear-gradient(145deg, #c0c0c0, #808080); display: flex; align-items: center; justify-content: center; font-family: 'Roboto Condensed', sans-serif; font-size: 1.5rem; color: #111; border: 2px solid #555; }
+        .briefcase.selected .briefcase-inner { background: linear-gradient(145deg, #f6ad55, #ed8936); border-color: #fff; box-shadow: 0 0 15px #f6ad55; }
+        .briefcase.eliminated { cursor: default; pointer-events: none; }
+        .money-pill { transition: all 0.3s; font-family: 'Roboto Condensed', sans-serif; }
+        .money-pill.eliminated { background-color: #1a202c !important; color: #4a5568 !important; text-decoration: line-through; opacity: 0.3; border-color: transparent; }
+        .modal-overlay { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
+        .banker-offer-card { animation: slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes slideIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .banker-offer-text { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div id="game-container" class="max-w-6xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-black uppercase tracking-tighter text-yellow-500 italic">Deal or No Deal</h1>
+            <p id="game-status" class="text-lg text-gray-400 mt-2 font-medium bg-black/30 inline-block px-6 py-1 rounded-full border border-white/10">Select your lucky briefcase</p>
+        </header>
+        <div class="flex flex-col lg:flex-row gap-8 justify-center items-start">
+            <div id="left-prizes" class="flex flex-col gap-1 w-full lg:w-48 order-2 lg:order-1"></div>
+            <div class="flex-1 order-1 lg:order-2 w-full">
+                <div id="briefcase-grid" class="briefcase-grid"></div>
+                <div id="user-box-area" class="mt-12 hidden flex flex-col items-center">
+                    <p class="text-xs uppercase tracking-widest text-gray-500 mb-2 font-bold">Your Selection</p>
+                    <div id="my-briefcase" class="w-32 h-24 briefcase selected">
+                        <div class="briefcase-inner" id="my-case-number" style="font-size: 2rem;">?</div>
+                    </div>
+                </div>
+            </div>
+            <div id="right-prizes" class="flex flex-col gap-1 w-full lg:w-48 order-3 lg:order-3"></div>
+        </div>
+    </div>
+
+    <!-- Banker Modal -->
+    <div id="banker-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden p-4">
+        <div class="banker-offer-card bg-gray-900/90 border-2 border-yellow-500/50 p-8 rounded-3xl max-w-md w-full text-center shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+            <h2 id="banker-title" class="text-xl font-bold text-gray-400 mb-1 uppercase tracking-widest">Banker's Offer</h2>
+            <div class="text-6xl font-black text-yellow-500 mb-8 banker-offer-text" id="offer-amount">£0</div>
+            <div id="banker-controls" class="flex gap-4">
+                <button onclick="handleDeal()" class="flex-1 bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-2xl text-xl shadow-lg transition transform active:scale-95">DEAL</button>
+                <button onclick="handleNoDeal()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-2xl text-xl shadow-lg transition transform active:scale-95">NO DEAL</button>
+            </div>
+            <div id="play-on-controls" class="hidden">
+                <button onclick="handleNoDeal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-xl shadow-lg transition transform active:scale-95">CONTINUE PLAYING ON</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Result Modal -->
+    <div id="result-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-gray-900 border-2 border-white p-10 rounded-3xl max-w-lg w-full text-center shadow-2xl">
+            <h2 id="result-title" class="text-3xl font-black mb-4 text-white">GAME OVER</h2>
+            <p id="result-desc" class="text-gray-400 mb-2 uppercase tracking-widest text-sm">You won</p>
+            <div class="text-6xl font-black text-yellow-500 mb-8" id="final-amount">£0</div>
+            <div id="final-reveal" class="text-gray-400 mb-8 italic"></div>
+            <button onclick="location.reload()" class="bg-white text-gray-900 hover:bg-gray-200 font-bold py-4 px-12 rounded-full text-lg transition transform active:scale-95">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const PRIZE_VALUES = [0.01, 0.1, 0.5, 1, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 3000, 5000, 10000, 15000, 20000, 35000, 50000, 100000];
+        let cases = [], myCase = null, rounds = [6, 5, 4, 3, 2, 1, 1], currentRoundIndex = 0, casesToOpenThisRound = 0, gameActive = true, acceptedOffer = null, isPlayingOn = false;
+
+        function initGame() {
+            const shuffledPrizes = [...PRIZE_VALUES].sort(() => Math.random() - 0.5);
+            cases = shuffledPrizes.map((val, i) => ({ id: i + 1, value: val, isOpened: false }));
+            renderPrizes(); renderGrid();
+        }
+
+        function renderPrizes() {
+            const left = document.getElementById('left-prizes'), right = document.getElementById('right-prizes');
+            left.innerHTML = ''; right.innerHTML = '';
+            PRIZE_VALUES.forEach((val, i) => {
+                const pill = document.createElement('div');
+                pill.className = `money-pill py-1.5 px-4 text-center rounded text-sm font-bold border border-white/10 ${i < 11 ? 'bg-blue-800' : 'bg-red-800'}`;
+                pill.id = `prize-${val}`; pill.textContent = formatCurrency(val);
+                if (i < 11) left.appendChild(pill); else right.appendChild(pill);
+            });
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('briefcase-grid');
+            grid.innerHTML = '';
+            cases.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'briefcase'; div.id = `case-${c.id}`;
+                div.innerHTML = `<div class="briefcase-inner">${c.id}</div>`;
+                div.onclick = () => handleCaseClick(c.id);
+                grid.appendChild(div);
+            });
+        }
+
+        function handleCaseClick(id) {
+            if (!gameActive) return;
+            const caseObj = cases.find(c => c.id === id);
+            if (caseObj.isOpened) return;
+
+            if (myCase === null) {
+                myCase = caseObj;
+                document.getElementById(`case-${id}`).classList.add('selected');
+                document.getElementById('user-box-area').classList.remove('hidden');
+                document.getElementById('my-case-number').textContent = id;
+                casesToOpenThisRound = rounds[currentRoundIndex];
+                document.getElementById('game-status').textContent = `Open ${casesToOpenThisRound} cases`;
+                return;
+            }
+
+            if (caseObj === myCase) return;
+            caseObj.isOpened = true;
+            const element = document.getElementById(`case-${id}`);
+            element.classList.add('eliminated');
+            const inner = element.querySelector('.briefcase-inner');
+            inner.textContent = formatCurrency(caseObj.value);
+            inner.style.background = '#000'; inner.style.color = '#fff'; inner.style.opacity = '0.4';
+            document.getElementById(`prize-${caseObj.value}`).classList.add('eliminated');
+
+            casesToOpenThisRound--;
+            if (casesToOpenThisRound > 0) {
+                document.getElementById('game-status').textContent = (isPlayingOn ? "[PLAY ON MODE] " : "") + `Open ${casesToOpenThisRound} more cases`;
+            } else {
+                document.getElementById('game-status').textContent = "The Banker is calling...";
+                gameActive = false;
+                setTimeout(showBankerOffer, 1000);
+            }
+        }
+
+        function showBankerOffer() {
+            const offer = calculateOffer();
+            document.getElementById('offer-amount').textContent = formatCurrency(offer);
+            document.getElementById('banker-title').textContent = isPlayingOn ? "WHAT THE BANKER WOULD HAVE OFFERED" : "BANKER'S OFFER";
+            document.getElementById('banker-modal').classList.remove('hidden');
+            if (isPlayingOn) {
+                document.getElementById('banker-controls').classList.add('hidden');
+                document.getElementById('play-on-controls').classList.remove('hidden');
+            }
+        }
+
+        function calculateOffer() {
+            const remainingValues = cases.filter(c => !c.isOpened).map(c => c.value);
+            const ev = remainingValues.reduce((a, b) => a + b, 0) / remainingValues.length;
+            const factor = (currentRoundIndex + 1) / rounds.length;
+            let offer = ev * (0.2 + (factor * 0.75)) * (0.95 + Math.random() * 0.1);
+            if (remainingValues.length === 2) offer = ev * 0.94;
+            return Math.floor(offer);
+        }
+
+        function handleDeal() {
+            acceptedOffer = parseInt(document.getElementById('offer-amount').textContent.replace(/[^0-9]/g, ''));
+            isPlayingOn = true;
+            document.getElementById('banker-modal').classList.add('hidden');
+            document.getElementById('game-status').textContent = "DEAL TAKEN. Playing on to see what would have happened...";
+            handleNoDeal(); // Trigger the next round logic
+        }
+
+        function handleNoDeal() {
+            document.getElementById('banker-modal').classList.add('hidden');
+            currentRoundIndex++;
+            gameActive = true;
+            if (currentRoundIndex >= rounds.length) endGame();
+            else {
+                casesToOpenThisRound = rounds[currentRoundIndex];
+                document.getElementById('game-status').textContent = (isPlayingOn ? "[PLAY ON] " : "") + `Open ${casesToOpenThisRound} more cases`;
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('banker-modal').classList.add('hidden');
+            document.getElementById('result-modal').classList.remove('hidden');
+            if (isPlayingOn) {
+                document.getElementById('result-title').textContent = "YOU SOLD YOUR CASE FOR " + formatCurrency(acceptedOffer);
+                document.getElementById('result-desc').textContent = "Your case actually contained";
+                document.getElementById('final-amount').textContent = formatCurrency(myCase.value);
+                const diff = acceptedOffer - myCase.value;
+                document.getElementById('final-reveal').textContent = diff > 0 ? `Brilliant Deal! You won ${formatCurrency(diff)} more than was in your case.` : `Ouch! You could have had ${formatCurrency(Math.abs(diff))} more.`;
+            } else {
+                document.getElementById('final-amount').textContent = formatCurrency(myCase.value);
+                document.getElementById('final-reveal').textContent = `You turned down every offer for your lucky briefcase!`;
+            }
+        }
+
+        function formatCurrency(val) { return val < 1 ? `${(val * 100).toFixed(0)}p` : `£${val.toLocaleString()}`; }
+        initGame();
+    </script>
+</body>
+</html>
+
