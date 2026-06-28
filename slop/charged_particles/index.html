@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElectroSolve - 2D Charged Particle Solver & Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="icon">⚡</span>
+        <h1>ElectroSolve <span class="badge">2D</span></h1>
+      </div>
+      <p class="tagline">Interactive Charged Particle Equilibrium Solver & Simulator</p>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-body">
+      <!-- Left Control Panel -->
+      <aside class="control-panel">
+        <!-- Section: Topology -->
+        <div class="control-group">
+          <h3>Geometry / Topology</h3>
+          <div class="toggle-group" id="topology-toggle">
+            <button class="toggle-btn active" data-value="box">2D Bounded Box</button>
+            <button class="toggle-btn" data-value="torus">2D Flat Torus</button>
+          </div>
+          <div class="checkbox-container" style="margin-top: 4px;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="toggle-hex-aspect">
+              <span class="custom-checkbox"></span>
+              Hexagonal Aspect Ratio (√3/2)
+            </label>
+          </div>
+        </div>
+
+        <!-- Section: Presets -->
+        <div class="control-group">
+          <h3>Presets</h3>
+          <select id="preset-select" class="styled-select">
+            <option value="" disabled selected>Select a preset...</option>
+            <option value="single">Single Charge</option>
+            <option value="dipole">Dipole (Opposite Charges)</option>
+            <option value="quadrupole">Quadrupole</option>
+            <option value="wigner-10">Wigner Crystal (10 charges)</option>
+            <option value="wigner-37">Wigner Crystal (37 charges)</option>
+            <option value="ring">Concentric Rings (Positive + Negative)</option>
+            <option value="random-15">Random Mixture (15 charges)</option>
+            <option value="capacitor">Parallel Plate Capacitor Grid</option>
+          </select>
+        </div>
+
+        <!-- Section: Physics Config -->
+        <div class="control-group">
+          <h3>Physics Settings</h3>
+          
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Electrostatic Constant (k<sub>e</sub>)</span>
+              <span id="val-ke" class="val-display">500</span>
+            </div>
+            <input type="range" id="param-ke" min="10" max="2000" step="10" value="500">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Force Law Power (1/r<sup>n</sup>)</span>
+            </div>
+            <div class="toggle-group mini" id="law-toggle">
+              <button class="toggle-btn active" data-value="2">3D Law (1/r²)</button>
+              <button class="toggle-btn" data-value="1">2D Law (1/r)</button>
+            </div>
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Time Step (dt)</span>
+              <span id="val-dt" class="val-display">0.05</span>
+            </div>
+            <input type="range" id="param-dt" min="0.001" max="5.0" step="0.001" value="0.05">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Damping / Friction</span>
+              <span id="val-damping" class="val-display">0.005</span>
+            </div>
+            <input type="range" id="param-damping" min="0" max="0.01" step="0.0001" value="0.005">
+          </div>
+
+          <div class="slider-container" id="wall-repulsion-container">
+            <div class="slider-label">
+              <span>Wall Potential Repulsion</span>
+              <span id="val-wall" class="val-display">100</span>
+            </div>
+            <input type="range" id="param-wall" min="0" max="500" step="10" value="100">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Softening Factor (ε)</span>
+              <span id="val-softening" class="val-display">15</span>
+            </div>
+            <input type="range" id="param-softening" min="1" max="50" step="1" value="15">
+          </div>
+        </div>
+
+        <!-- Section: Spawning / Tool Settings -->
+        <div class="control-group">
+          <h3>Tool Settings (Left Click)</h3>
+          
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Spawn Charge (q)</span>
+              <span id="val-spawn-q" class="val-display">+1.0</span>
+            </div>
+            <input type="range" id="param-spawn-q" min="-5" max="5" step="0.5" value="1">
+            <div class="btn-group-mini">
+              <button class="btn-small neg" id="btn-set-neg">Set -1</button>
+              <button class="btn-small neutral" id="btn-set-neu">Neutral</button>
+              <button class="btn-small pos" id="btn-set-pos">Set +1</button>
+            </div>
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-label">
+              <span>Spawn Mass (m)</span>
+              <span id="val-spawn-m" class="val-display">1.0</span>
+            </div>
+            <input type="range" id="param-spawn-m" min="0.1" max="10" step="0.1" value="1">
+          </div>
+        </div>
+
+        <!-- Section: Visualization -->
+        <div class="control-group">
+          <h3>Visualization Options</h3>
+          <div class="checkbox-container">
+            <label class="checkbox-label">
+              <input type="checkbox" id="vis-heatmap" checked>
+              <span class="custom-checkbox"></span>
+              Electrostatic Potential Heatmap
+            </label>
+          </div>
+          <div class="checkbox-container">
+            <label class="checkbox-label">
+              <input type="checkbox" id="vis-vectors" checked>
+              <span class="custom-checkbox"></span>
+              Electric Field Vectors
+            </label>
+          </div>
+          <div class="checkbox-container">
+            <label class="checkbox-label">
+              <input type="checkbox" id="vis-force" checked>
+              <span class="custom-checkbox"></span>
+              Show Net Force Vectors
+            </label>
+          </div>
+          <div class="checkbox-container">
+            <label class="checkbox-label">
+              <input type="checkbox" id="vis-glow" checked>
+              <span class="custom-checkbox"></span>
+              Glow Effect
+            </label>
+          </div>
+          <div class="checkbox-container">
+            <label class="checkbox-label">
+              <input type="checkbox" id="vis-trails" checked>
+              <span class="custom-checkbox"></span>
+              Trajectory Trails
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Visualization Canvas -->
+      <section class="canvas-section">
+        <!-- Interactive Canvas -->
+        <div class="canvas-container">
+          <canvas id="sim-canvas"></canvas>
+          <div class="canvas-overlay" id="canvas-overlay-text">
+            Left-click: ADD | Right-click: DELETE | Drag: MOVE
+          </div>
+          <!-- Physics stats overlay -->
+          <div class="stats-overlay">
+            <div class="stat-item">
+              <span class="label">Particles</span>
+              <span id="stat-count" class="val">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="label">Total Energy</span>
+              <span id="stat-energy" class="val">0.00 J</span>
+            </div>
+            <div class="stat-item">
+              <span class="label">Max Force</span>
+              <span id="stat-maxforce" class="val">0.00 N</span>
+            </div>
+            <div class="stat-item">
+              <span class="label">Status</span>
+              <span id="stat-status" class="val-status stable">Stable</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Control Bar -->
+        <div class="simulation-controls">
+          <button id="btn-play" class="action-btn primary">
+            <span class="icon">▶</span> <span class="text">Play</span>
+          </button>
+          <button id="btn-pause" class="action-btn secondary" disabled>
+            <span class="icon">⏸</span> <span class="text">Pause</span>
+          </button>
+          <button id="btn-step" class="action-btn secondary">
+            <span class="icon">⏭</span> <span class="text">Step</span>
+          </button>
+          <button id="btn-minimize" class="action-btn highlight">
+            <span class="icon">🎯</span> <span class="text">Solve Equilibrium</span>
+          </button>
+          <button id="btn-clear" class="action-btn danger">
+            <span class="icon">🗑</span> <span class="text">Clear</span>
+          </button>
+        </div>
+
+        <!-- Selection Info Display -->
+        <div class="inspector-panel" id="inspector">
+          <div class="inspector-empty" id="inspector-empty">
+            Select a particle to inspect & edit details
+          </div>
+          <div class="inspector-content" id="inspector-content" style="display: none;">
+            <div class="inspector-header">
+              <h4>Particle Inspector</h4>
+              <button class="close-btn" id="inspector-close">×</button>
+            </div>
+            <div class="inspector-grid">
+              <div class="info-field">
+                <span class="lbl">ID:</span>
+                <span id="inspect-id" class="val">-</span>
+              </div>
+              <div class="info-field">
+                <span class="lbl">Position:</span>
+                <span id="inspect-pos" class="val">-</span>
+              </div>
+              <div class="info-field">
+                <span class="lbl">Charge (q):</span>
+                <input type="number" id="inspect-charge" step="0.1" class="styled-input">
+              </div>
+              <div class="info-field">
+                <span class="lbl">Mass (m):</span>
+                <input type="number" id="inspect-mass" min="0.1" step="0.1" class="styled-input">
+              </div>
+              <div class="info-field">
+                <span class="lbl">Velocity:</span>
+                <span id="inspect-vel" class="val">-</span>
+              </div>
+              <div class="info-field">
+                <span class="lbl">Net Force:</span>
+                <span id="inspect-force" class="val">-</span>
+              </div>
+            </div>
+            <div class="inspector-actions">
+              <button class="action-btn danger btn-small" id="inspect-delete">Delete Particle</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
